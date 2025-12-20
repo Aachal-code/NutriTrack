@@ -1,34 +1,58 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+/**
+ * APP.JSX - MAIN APPLICATION FILE
+ * ================================
+ * 
+ * PURPOSE:
+ * This is the main entry point of our React application.
+ * It sets up routing using React Router so users can navigate between different pages.
+ * 
+ * ROUTING STRUCTURE:
+ * 1. /login → Shows Login page (Sign In)
+ * 2. /signup → Shows Signup page (Create Account)
+ * 3. / (root) → Automatically redirects to /login
+ * 
+ * HOW ROUTING WORKS:
+ * - <Router> wraps the entire app to enable navigation
+ * - <Routes> defines all available routes
+ * - <Route> sets path and which component to show
+ * - <Navigate> redirects from one path to another
+ * 
+ * FLOW:
+ * User visits app → Root path "/" → Gets redirected to "/login" → Login page shows
+ * OR
+ * User clicks "Sign Up" link → Goes to "/signup" → Signup page shows
+ */
+
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
 import './App.css'
 
+/**
+ * APP COMPONENT
+ * =============
+ * Main component that sets up routing for the entire application
+ */
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    // Router: Enables all React Router functionality
+    <Router>
+      {/* Routes: Container for all route definitions */}
+      <Routes>
+        {/* Route 1: Login Page */}
+        {/* Path: /login → Shows <Login /> component */}
+        <Route path="/login" element={<Login />} />
+        
+        {/* Route 2: Signup Page */}
+        {/* Path: /signup → Shows <Signup /> component */}
+        <Route path="/signup" element={<Signup />} />
+        
+        {/* Route 3: Root Path Redirect */}
+        {/* Path: / (any other path) → Redirect to /login */}
+        {/* replace: replaces history entry so user can't go back to "/" */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </Router>
   )
 }
 
