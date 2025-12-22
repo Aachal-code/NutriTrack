@@ -54,7 +54,7 @@ export default function Login() {
       
       setTimeout(() => {
         localStorage.setItem('user', JSON.stringify({ email: formData.email }));
-        navigate('/dashboard');
+        navigate('/home');
         setIsLoading(false);
       }, 1000);
     } catch (err) {

@@ -26,6 +26,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import Home from './pages/Home'
 import './App.css'
 
 /**
@@ -39,15 +40,19 @@ function App() {
     <Router>
       {/* Routes: Container for all route definitions */}
       <Routes>
-        {/* Route 1: Login Page */}
+        {/* Route 1: Home Page (Dashboard) */}
+        {/* Path: /home → Shows <Home /> component */}
+        <Route path="/home" element={<Home />} />
+        
+        {/* Route 2: Login Page */}
         {/* Path: /login → Shows <Login /> component */}
         <Route path="/login" element={<Login />} />
         
-        {/* Route 2: Signup Page */}
+        {/* Route 3: Signup Page */}
         {/* Path: /signup → Shows <Signup /> component */}
         <Route path="/signup" element={<Signup />} />
         
-        {/* Route 3: Root Path Redirect */}
+        {/* Route 4: Root Path Redirect */}
         {/* Path: / (any other path) → Redirect to /login */}
         {/* replace: replaces history entry so user can't go back to "/" */}
         <Route path="/" element={<Navigate to="/login" replace />} />

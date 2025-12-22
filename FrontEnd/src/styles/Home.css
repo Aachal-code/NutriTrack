@@ -1,0 +1,425 @@
+/* Home Page Styling - NutriTrack App */
+/* ===== CSS VARIABLES ===== */
+:root {
+  --primary-pink: #ff1493;
+  --primary-purple: #8b3a8b;
+  --light-pink: #ff69b4;
+  --dark-purple: #6b2d6b;
+  --light-purple: #f0e6f0;
+  --text-dark: #333333;
+  --text-gray: #666666;
+  --border-gray: #e0e0e0;
+  --white: #ffffff;
+  --light-gray: #f8f9fa;
+  --success-green: #27ae60;
+  --warning-yellow: #fff3cd;
+  --light-green: #e8f5e9;
+  --light-blue: #e3f2fd;
+  --light-pink-bg: #fce4ec;
+  --light-purple-bg: #f3e5f5;
+}
+
+/* ===== HOME CONTAINER ===== */
+.home-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: linear-gradient(135deg, #fff5f9 0%, #f0e6f0 100%);
+  padding-bottom: 80px; /* Space for bottom navigation */
+  overflow-y: auto;
+}
+
+/* ===== HOME CONTENT ===== */
+.home-content {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ===== GREETING CARD ===== */
+.greeting-card {
+  background: linear-gradient(135deg, #ff1493 0%, #8b3a8b 100%);
+  border-radius: 20px;
+  padding: 25px;
+  color: var(--white);
+  box-shadow: 0 8px 24px rgba(255, 20, 147, 0.2);
+}
+
+.greeting-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.greeting-text h1 {
+  font-size: 24px;
+  font-weight: 400;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.greeting-text h1 strong {
+  font-size: 28px;
+  font-weight: 700;
+  display: block;
+}
+
+.profile-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.trimester-info {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.info-badge {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.badge-icon {
+  font-size: 24px;
+}
+
+.badge-content {
+  flex: 1;
+}
+
+.badge-label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 60%;
+  background: var(--white);
+  border-radius: 2px;
+}
+
+.due-date {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 12px 15px;
+}
+
+.due-date p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.due-date strong {
+  font-weight: 600;
+}
+
+/* ===== REMINDERS SECTION ===== */
+.reminders-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 5px;
+}
+
+.section-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.reminder-badge {
+  background: #ff4444;
+  color: var(--white);
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 24px;
+  text-align: center;
+}
+
+.reminders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reminder-item {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.reminder-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.reminder-icon {
+  font-size: 28px;
+  min-width: 40px;
+  text-align: center;
+}
+
+.reminder-content {
+  flex: 1;
+}
+
+.reminder-content h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0 0 4px 0;
+}
+
+.reminder-content p {
+  font-size: 12px;
+  color: var(--text-gray);
+  margin: 0;
+}
+
+.reminder-action {
+  font-size: 18px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.reminder-action:hover {
+  transform: scale(1.1);
+}
+
+/* ===== QUICK ACCESS GRID ===== */
+.quick-access-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.quick-access-section h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0 5px;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.grid-item {
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  min-height: 100px;
+}
+
+.grid-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.grid-icon {
+  font-size: 32px;
+}
+
+.grid-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dark);
+  margin: 0;
+  text-align: center;
+}
+
+/* ===== TIP CARD ===== */
+.tip-card {
+  background: var(--warning-yellow);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  border-left: 4px solid #ffc107;
+}
+
+.tip-icon {
+  font-size: 28px;
+  min-width: 40px;
+  text-align: center;
+}
+
+.tip-content {
+  flex: 1;
+}
+
+.tip-content h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0 0 6px 0;
+}
+
+.tip-content p {
+  font-size: 13px;
+  color: var(--text-gray);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ===== BOTTOM NAVIGATION ===== */
+.bottom-navigation {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--white);
+  border-top: 1px solid var(--border-gray);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 70px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  z-index: 100;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 8px 12px;
+  color: #999999;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.nav-item.active {
+  color: var(--primary-pink);
+}
+
+.nav-icon {
+  font-size: 20px;
+}
+
+.nav-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.nav-item:hover {
+  background: var(--light-gray);
+}
+
+/* ===== SCROLLBAR STYLING ===== */
+.home-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.home-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.home-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 20, 147, 0.3);
+  border-radius: 3px;
+}
+
+.home-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 20, 147, 0.5);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 600px) {
+  .home-content {
+    padding: 15px;
+    gap: 16px;
+  }
+
+  .greeting-card {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .greeting-text h1 {
+    font-size: 22px;
+  }
+
+  .greeting-text h1 strong {
+    font-size: 26px;
+  }
+
+  .section-header h2 {
+    font-size: 16px;
+  }
+
+  .grid-item {
+    min-height: 90px;
+    padding: 16px;
+  }
+
+  .grid-icon {
+    font-size: 28px;
+  }
+
+  .grid-label {
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 601px) {
+  .home-container {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+}
