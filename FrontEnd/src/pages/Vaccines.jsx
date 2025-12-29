@@ -6,17 +6,37 @@
  * Fully modular with reusable sub-components
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import VaccinesHeader from '../components/VaccinesHeader';
 import VaccineCard from '../components/VaccineCard';
 import BottomNavigation from '../components/BottomNavigation';
 import NotificationService from '../services/NotificationService';
+import { getVaccineSchedule } from '../api';
 import '../styles/Vaccines.css';
 
 export default function Vaccines() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
+  const [vaccineSchedule, setVaccineSchedule] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Fetch vaccine schedule on mount
+  useEffect(() => {
+    const fetchVaccineSchedule = async () => {
+      try {
+        const data = await getVaccineSchedule();
+        setVaccineSchedule(data.schedule || []);
+      } catch (error) {
+        console.error('Error fetching vaccine schedule:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVaccineSchedule();
+  }, []);
+  
   const [vaccines, setVaccines] = useState([
     {
       id: 1,

@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .database import engine, Base
 from . import models  # Import all models
-from .routers import auth_router, static_router
+from .routers import auth_router, static_router, growth_router, reminders_router
 
 app = FastAPI(title="NutriTrack API")
 
@@ -20,6 +20,8 @@ Base.metadata.create_all(bind=engine)  # Create tables
 
 app.include_router(auth_router)
 app.include_router(static_router)
+app.include_router(growth_router)
+app.include_router(reminders_router)
 
 
 @app.get("/")

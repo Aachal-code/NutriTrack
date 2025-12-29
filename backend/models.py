@@ -21,7 +21,7 @@ class User(Base):
     water_intake = relationship("WaterIntake", back_populates="user", cascade="all, delete-orphan")
     weight_logs = relationship("WeightLog", back_populates="user", cascade="all, delete-orphan")
     symptoms = relationship("Symptom", back_populates="user", cascade="all, delete-orphan")
-    allergies = relationship("Allergy", back_populates="user", cascade="all, delete-orphan")
+    # allergies = relationship("Allergy", back_populates="user", cascade="all, delete-orphan")
 
 class GrowthRecord(Base):
     __tablename__ = "growth_records"
@@ -114,13 +114,13 @@ class Symptom(Base):
 
     user = relationship("User", back_populates="symptoms")
 
-class Allergy(Base):
-    __tablename__ = "allergies"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    allergen = Column(String(255))
-    severity = Column(String(50))  # 'mild', 'moderate', 'severe'
-    notes = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    user = relationship("User", back_populates="allergies")
+# class Allergy(Base):
+#     __tablename__ = "allergies"
+#     id = Column(Integer, primary_key=True, index=True)
+#     user_id = Column(Integer, ForeignKey("users.id"))
+#     allergen = Column(String(255))
+#     severity = Column(String(50))  # 'mild', 'moderate', 'severe'
+#     notes = Column(Text, nullable=True)
+#     created_at = Column(DateTime, default=datetime.utcnow)
+#
+#     user = relationship("User", back_populates="allergies")

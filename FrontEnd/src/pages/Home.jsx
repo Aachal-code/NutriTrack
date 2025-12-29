@@ -13,31 +13,25 @@ import NotificationCard from '../components/NotificationCard';
 import NotificationBanner from '../components/NotificationBanner';
 import TipCard from '../components/TipCard';
 import BottomNavigation from '../components/BottomNavigation';
+import NotificationService from '../services/NotificationService';
+import { getReminders, getDailyTip } from '../api';
 import '../styles/Home.css';
 import '../styles/NotificationCard.css';
 
 export default function Home() {
+  // State for notification permission
+  const [notificationPermission, setNotificationPermission] = useState(false);
+  const [tip, setTip] = useState("Stay hydrated! Drink at least 8 glasses of water daily.");
+  const [tipError, setTipError] = useState(null);
+  const [reminders, setReminders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   // Sample data - would come from props or API in production
   const userData = {
     userName: "Sarah Johnson",
     trimester: "Trimester 2",
     dueDate: "2025-06-15"
   };
-
-  const reminders = [
-    {
-      id: 1,
-      title: "Vaccine Due Tomorrow",
-      description: "2nd dose of Hepatitis B",
-      icon: "💉"
-    },
-    {
-      id: 2,
-      title: "Doctor Appointment",
-      description: "Dec 5, 2025 at 10:00 AM",
-      icon: "📅"
-    }
-  ];
 
   // Vaccine data for notification checking
   const vaccinesData = [
@@ -124,7 +118,41 @@ export default function Home() {
       }
     };
 
+    const fetchData = async () => {
+      try {
+        // Fetch reminders from backend
+        const remindersData = await getReminders();
+        setReminders(remindersData.map(r => ({
+          id: r.id,
+          title: r.title,
+          description: new Date(r.reminder_date).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          icon: r.type === 'vaccine' ? '💉' : '📅'
+        })));
+      } catch (error) {
+        console.error('Error fetching reminders:', error);
+        // Keep empty array if fetch fails
+      }
+
+      try {
+        // Fetch daily tip from backend
+        const tipData = await getDailyTip();
+        setTip(tipData.tip);
+      } catch (error) {
+        console.error('Error fetching daily tip:', error);
+        setTipError(error.message);
+      }
+      
+      setLoading(false);
+    };
+
     initializeNotifications();
+    fetchData();
   }, []);
 
   return (

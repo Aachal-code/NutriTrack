@@ -6,15 +6,34 @@
  * Fully modular with reusable sub-components
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FeedingHeader from '../components/FeedingHeader';
 import BottomNavigation from '../components/BottomNavigation';
+import { getFeedingGuide } from '../api';
 import '../styles/Feeding.css';
 
 export default function Feeding() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('schedule');
+  const [feedingGuide, setFeedingGuide] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  // Fetch feeding guide on mount
+  useEffect(() => {
+    const fetchFeedingGuide = async () => {
+      try {
+        const data = await getFeedingGuide();
+        setFeedingGuide(data.by_age || {});
+      } catch (error) {
+        console.error('Error fetching feeding guide:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeedingGuide();
+  }, []);
 
   // Sample feeding data - would come from props or API in production
   const feedingData = {

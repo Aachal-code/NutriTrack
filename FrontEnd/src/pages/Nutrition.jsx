@@ -6,16 +6,40 @@
  * Fully modular with reusable sub-components
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NutritionHeader from '../components/NutritionHeader';
 import NutritionCard from '../components/NutritionCard';
 import BottomNavigation from '../components/BottomNavigation';
+import { getNutritionTips, getSafeFoods } from '../api';
 import '../styles/Nutrition.css';
 
 export default function Nutrition() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('recommended');
+  const [nutritionTips, setNutritionTips] = useState([]);
+  const [safeFoods, setSafeFoods] = useState({ safe: [], unsafe: [] });
+  const [loading, setLoading] = useState(true);
+
+  // Fetch nutrition data on mount
+  useEffect(() => {
+    const fetchNutritionData = async () => {
+      try {
+        const [tipsData, foodsData] = await Promise.all([
+          getNutritionTips(),
+          getSafeFoods()
+        ]);
+        setNutritionTips(tipsData.tips || []);
+        setSafeFoods(foodsData);
+      } catch (error) {
+        console.error('Error fetching nutrition data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNutritionData();
+  }, []);
 
   // Sample nutrition data - would come from props or API in production
   const nutritionData = {

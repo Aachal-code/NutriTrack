@@ -11,15 +11,34 @@ import os
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
+# Set defaults for development - in production, use environment variables
+SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production-min-32-chars")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 1440))
 
 def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        # Bcrypt has a 72-byte limit, truncate the same way as during hashing
+        password_bytes = plain_password.encode('utf-8')[:72]
+        return pwd_context.verify(password_bytes, hashed_password)
+    except Exception as e:
+        # Log the error in production
+        print(f"Password verification error: {e}")
+        return False
 
 def get_password_hash(password):
-    return pwd_context.hash(password)
+    try:
+        # Bcrypt has a 72-byte limit, so truncate if necessary
+        # This is safe because the entropy is still high
+        password_bytes = password.encode('utf-8')[:72]
+        return pwd_context.hash(password_bytes)
+    except Exception as e:
+        # Log the error in production
+        print(f"Password hashing error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error processing password"
+        )
 
 def create_access_token(data: dict):
     to_encode = data.copy()

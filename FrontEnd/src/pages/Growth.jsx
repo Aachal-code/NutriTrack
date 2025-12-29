@@ -6,16 +6,56 @@
  * Fully modular with reusable sub-components
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GrowthHeader from '../components/GrowthHeader';
 import MilestoneCard from '../components/MilestoneCard';
 import BottomNavigation from '../components/BottomNavigation';
+import { getGrowthRecords, createGrowthRecord, deleteGrowthRecord } from '../api';
 import '../styles/Growth.css';
 
 export default function Growth() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('weight');
+  const [growthRecords, setGrowthRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Fetch growth records on mount
+  useEffect(() => {
+    const fetchGrowthRecords = async () => {
+      try {
+        const records = await getGrowthRecords();
+        setGrowthRecords(records);
+      } catch (error) {
+        console.error('Error fetching growth records:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGrowthRecords();
+  }, []);
+
+  const handleAddRecord = async (recordData) => {
+    try {
+      const newRecord = await createGrowthRecord(recordData);
+      setGrowthRecords([newRecord, ...growthRecords]);
+    } catch (error) {
+      console.error('Error adding growth record:', error);
+      alert('Failed to add growth record');
+    }
+  };
+
+  const handleDeleteRecord = async (recordId) => {
+    try {
+      await deleteGrowthRecord(recordId);
+      setGrowthRecords(growthRecords.filter(r => r.id !== recordId));
+    } catch (error) {
+      console.error('Error deleting growth record:', error);
+      alert('Failed to delete growth record');
+    }
+  };
+  
   const [milestones, setMilestones] = useState([
     {
       id: 1,
