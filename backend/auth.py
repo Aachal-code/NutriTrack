@@ -46,9 +46,9 @@ def validate_password_strength(password: str) -> dict:
 
 def verify_password(plain_password, hashed_password):
     try:
-        # Bcrypt has a 72-byte limit, truncate the same way as during hashing
-        password_bytes = plain_password.encode('utf-8')[:72]
-        return pwd_context.verify(password_bytes, hashed_password)
+        # Bcrypt has a 72-byte limit, truncate to stay within limits
+        truncated_password = plain_password[:72] if len(plain_password) > 72 else plain_password
+        return pwd_context.verify(truncated_password, hashed_password)
     except Exception as e:
         # Log the error in production
         print(f"Password verification error: {e}")
@@ -58,8 +58,8 @@ def get_password_hash(password):
     try:
         # Bcrypt has a 72-byte limit, so truncate if necessary
         # This is safe because the entropy is still high
-        password_bytes = password.encode('utf-8')[:72]
-        return pwd_context.hash(password_bytes)
+        truncated_password = password[:72] if len(password) > 72 else password
+        return pwd_context.hash(truncated_password)
     except Exception as e:
         # Log the error in production
         print(f"Password hashing error: {e}")
@@ -86,30 +86,6 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if user is None:
         raise HTTPException(status_code=401, detail="User not found")
     return user
-
-def verify_password(plain_password, hashed_password):
-    try:
-        # Bcrypt has a 72-byte limit, truncate the same way as during hashing
-        password_bytes = plain_password.encode('utf-8')[:72]
-        return pwd_context.verify(password_bytes, hashed_password)
-    except Exception as e:
-        # Log the error in production
-        print(f"Password verification error: {e}")
-        return False
-
-def get_password_hash(password):
-    try:
-        # Bcrypt has a 72-byte limit, so truncate if necessary
-        # This is safe because the entropy is still high
-        password_bytes = password.encode('utf-8')[:72]
-        return pwd_context.hash(password_bytes)
-    except Exception as e:
-        # Log the error in production
-        print(f"Password hashing error: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error processing password"
-        )
 
 def create_access_token(data: dict):
     to_encode = data.copy()
