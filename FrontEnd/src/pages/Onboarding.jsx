@@ -50,10 +50,21 @@ export default function Onboarding() {
     }
   };
 
+  const handleSkip = () => {
+    navigate('/welcome');
+  };
+
   return (
     <div className="onboarding-container-simple">
       {/* Header with logo and step indicator */}
       <div className="onboarding-header">
+        <button 
+          className="onboarding-skip-btn"
+          onClick={handleSkip}
+          type="button"
+        >
+          Skip
+        </button>
         <div className="app-branding">
           <span className="app-name">NutriTrack</span>
         </div>

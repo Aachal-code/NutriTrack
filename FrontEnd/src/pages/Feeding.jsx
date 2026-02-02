@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import FeedingHeader from '../components/FeedingHeader';
 import BottomNavigation from '../components/BottomNavigation';
 import { useBabyContext } from '../context/BabyContext';
-import { getBabies, getAuthToken } from '../api';
+import { getAuthToken } from '../api';
 import { getBabyAgeMonths, calculateBabyAgeDetailed } from '../utils/babyAge';
 import '../styles/Feeding.css';
 
@@ -157,9 +157,9 @@ export default function Feeding() {
   const [activeTab, setActiveTab] = useState('schedule');
   const [showLogModal, setShowLogModal] = useState(false);
   const [showReminder, setShowReminder] = useState(false);
-  const [showBabySelector, setShowBabySelector] = useState(false);
+  const [_showBabySelector, _setShowBabySelector] = useState(false);
   const [babyData, setBabyData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [feedingLogs, setFeedingLogs] = useState([]);
   const [reminders, setReminders] = useState([]);
   const [showPumpingGuide, setShowPumpingGuide] = useState(false);

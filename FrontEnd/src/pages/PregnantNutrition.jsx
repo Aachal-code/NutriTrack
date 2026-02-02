@@ -7,7 +7,6 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import NutritionHeader from '../components/NutritionHeader';
 import NutritionCard from '../components/NutritionCard';
 import BottomNavigation from '../components/BottomNavigation';
@@ -42,7 +41,6 @@ const calculateTrimester = (dueDateString) => {
 };
 
 export default function PregnantNutrition() {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('recommended');
   const [nutritionTips, setNutritionTips] = useState([]);
   const [safeFoods, setSafeFoods] = useState({ safe: [], unsafe: [] });

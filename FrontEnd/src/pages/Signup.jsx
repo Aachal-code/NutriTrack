@@ -27,7 +27,7 @@ import AuthFooter from '../components/AuthFooter';
 import UserTypeSelector from '../components/UserTypeSelector';
 import SubmitButton from '../components/SubmitButton';
 import PasswordStrengthIndicator from '../components/PasswordStrengthIndicator';
-import { register, setAuthToken } from '../api';
+import { register } from '../api';
 import '../styles/Auth.css';
 
 export default function Signup() {

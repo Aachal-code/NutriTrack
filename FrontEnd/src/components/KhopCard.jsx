@@ -7,6 +7,7 @@
 
 import { useState } from 'react';
 import { calculateBabyAgeDetailed } from '../utils/babyAge';
+import logo from '../assets/logo.png';
 import '../styles/KhopCard.css';
 
 export default function KhopCard({ isOpen, onClose, babyName, babyDOB, completedVaccines }) {
@@ -28,8 +29,9 @@ export default function KhopCard({ isOpen, onClose, babyName, babyDOB, completed
         {/* Close Button */}
         <button className="khop-card-close" onClick={onClose}>×</button>
 
-        {/* Header with logos */}
+        {/* Header with logo */}
         <div className="khop-card-header">
+          <img src={logo} alt="Logo" className="khop-card-logo" />
           <p>खोप कार्ड</p>
           <h2>टीकाकरण रेकर्ड</h2>
         </div>

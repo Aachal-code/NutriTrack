@@ -78,6 +78,17 @@
   padding: 30px 20px;
   text-align: center;
   border-bottom: 3px solid #003366;
+  position: relative;
+}
+
+/* Logo in header */
+.khop-card-logo {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  height: 50px;
+  width: auto;
+  object-fit: contain;
 }
 
 .khop-card-header h2 {

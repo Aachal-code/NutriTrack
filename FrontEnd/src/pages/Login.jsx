@@ -20,7 +20,7 @@ import ErrorMessage from '../components/ErrorMessage';
 import AuthHeader from '../components/AuthHeader';
 import AuthFooter from '../components/AuthFooter';
 import SubmitButton from '../components/SubmitButton';
-import { login, setAuthToken } from '../api';
+import { login, setAuthToken, getCurrentUser } from '../api';
 import '../styles/Auth.css';
 
 export default function Login() {
@@ -62,8 +62,16 @@ export default function Login() {
       const result = await login({ email: formData.email, password: formData.password });
       setAuthToken(result.access_token);
       
+      // Clear old localStorage values to prevent stale data
+      localStorage.removeItem('userType');
+      localStorage.removeItem('selectedStage');
+      
+      // Fetch current user to get the correct user type
+      const user = await getCurrentUser();
+      const userType = user.user_type || 'newParent';
+      localStorage.setItem('userType', userType);
+      
       // Redirect based on user type
-      const userType = localStorage.getItem('userType') || localStorage.getItem('selectedStage');
       if (userType === 'pregnant') {
         navigate('/pregnant/home');
       } else {

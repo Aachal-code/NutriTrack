@@ -87,6 +87,31 @@
   transform: scale(0.98);
 }
 
+/* Skip Button */
+.onboarding-skip-btn {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+  color: #7be0d6;
+  background: transparent;
+  border: 2px solid #7be0d6;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: none;
+}
+
+.onboarding-skip-btn:hover {
+  background: rgba(123, 224, 214, 0.1);
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(123, 224, 214, 0.3);
+}
+
+.onboarding-skip-btn:active {
+  transform: scale(0.98);
+}
+
 /* Step Indicator */
 .step-indicator {
   display: flex;

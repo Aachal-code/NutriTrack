@@ -11,20 +11,16 @@ import { useNavigate } from 'react-router-dom';
 import BottomNavigation from '../components/BottomNavigation';
 import { useBabyContext } from '../context/BabyContext';
 import { 
-  getCurrentUser,
   getUserProfile,
   saveEmergencyContact,
-  getEmergencyContact,
   sendPartnerInvite,
-  clearAuthToken,
-  getBabies
+  clearAuthToken
 } from '../api';
 import '../styles/Profile.css';
 
 export default function Profile() {
   const navigate = useNavigate();
   const { babies, selectedBaby, setSelectedBaby } = useBabyContext();
-  const [loading, setLoading] = useState(true);
   
   // State for settings
   const [showEmergencyModal, setShowEmergencyModal] = useState(false);
@@ -66,8 +62,6 @@ export default function Profile() {
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
-      } finally {
-        setLoading(false);
       }
     };
 

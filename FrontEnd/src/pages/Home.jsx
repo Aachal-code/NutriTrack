@@ -23,52 +23,27 @@ import { calculateBabyAgeDetailed, getBabyAgeMonths } from '../utils/babyAge';
 import '../styles/Home.css';
 import '../styles/NotificationCard.css';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-// Derive trimester using a 40-week gestation counted from estimated conception (LMP) based on due date
-const calculateTrimester = (dueDateString) => {
-  if (!dueDateString) return { trimester: 'Unknown', weeksPregnant: null };
-
-  const dueDate = new Date(dueDateString);
-  if (Number.isNaN(dueDate.getTime())) return { trimester: 'Unknown', weeksPregnant: null };
-
-  const today = new Date();
-  const normalizedToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const estimatedLmp = new Date(dueDate.getTime() - 280 * DAY_MS); // 40 weeks before due date
-  const normalizedLmp = new Date(estimatedLmp.getFullYear(), estimatedLmp.getMonth(), estimatedLmp.getDate());
-
-  const daysPregnant = Math.floor((normalizedToday - normalizedLmp) / DAY_MS);
-  if (daysPregnant < 0) return { trimester: 'Unknown', weeksPregnant: 0 };
-
-  const weeksPregnant = Math.min(40, Math.floor(daysPregnant / 7));
-
-  if (weeksPregnant < 13) {
-    return { trimester: 'Trimester 1', weeksPregnant };
-  }
-  if (weeksPregnant < 28) {
-    return { trimester: 'Trimester 2', weeksPregnant };
-  }
-  return { trimester: 'Trimester 3', weeksPregnant };
-};
+const HOME_USER_TYPE = 'newParent';
 
 export default function Home() {
   const navigate = useNavigate();
   const { selectedBaby } = useBabyContext();
+  const storedUserType = localStorage.getItem('userType') || localStorage.getItem('selectedStage');
   
   // State for notification permission
-  const [notificationPermission, setNotificationPermission] = useState(false);
+  const [_notificationPermission, setNotificationPermission] = useState(false);
   const [tip, setTip] = useState("Stay hydrated! Drink at least 8 glasses of water daily.");
   const [tipError, setTipError] = useState(null);
   const [reminders, setReminders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [showAddBabyModal, setShowAddBabyModal] = useState(false);
   const [isSubmittingBaby, setIsSubmittingBaby] = useState(false);
   const [userData, setUserData] = useState({
     userName: "Loading...",
-    trimester: "Calculating...",
+    trimester: "Baby Age",
     dueDate: null,
     weeksPregnant: null,
-    userType: 'pregnant',
+    userType: HOME_USER_TYPE,
     babyAgeLabel: 'Age unknown',
     babyAgeMonths: null,
     babyAgeWeeks: null,
@@ -126,10 +101,10 @@ export default function Home() {
           console.log('No authentication token found');
           setUserData({
             userName: "Guest",
-            trimester: "Unknown",
+            trimester: "Baby Age",
             dueDate: null,
             weeksPregnant: null,
-            userType: 'pregnant',
+            userType: HOME_USER_TYPE,
             babyAgeLabel: 'Age unknown',
             babyAgeMonths: null,
             babyAgeWeeks: null,
@@ -143,40 +118,42 @@ export default function Home() {
         const user = await getCurrentUser();
         console.log('User data fetched:', user);
 
-        const userType = user.user_type || 'pregnant';
-        localStorage.setItem('userType', userType);
+        const serverUserType = user.user_type || storedUserType;
+        if (serverUserType === 'pregnant') {
+          localStorage.setItem('userType', 'pregnant');
+          navigate('/pregnant/home');
+          return;
+        }
 
-        const { trimester, weeksPregnant } = calculateTrimester(user.due_date);
+        localStorage.setItem('userType', HOME_USER_TYPE);
         
         let babyAgeLabel = 'Age unknown';
         let babyAgeMonths = null;
         let babyAgeWeeks = null;
         let babyDob = null;
 
-        // If user is newParent, fetch baby data and calculate age
-        if (userType === 'newParent') {
-          try {
-            const babiesData = await getBabies().catch(() => []);
-            if (babiesData && babiesData.length > 0) {
-              // Use selected baby from context or first active baby
-              const babyToUse = selectedBaby || babiesData.find(b => b.is_active) || babiesData[0];
-              babyDob = babyToUse.date_of_birth;
-              const babyAge = calculateBabyAgeDetailed(babyDob);
-              babyAgeLabel = babyAge.label;
-              babyAgeMonths = getBabyAgeMonths(babyDob);
-              babyAgeWeeks = babyAge.weeks;
-            }
-          } catch (error) {
-            console.error('Error fetching baby data:', error);
+        // Fetch baby data and calculate age for Home (new parent)
+        try {
+          const babiesData = await getBabies().catch(() => []);
+          if (babiesData && babiesData.length > 0) {
+            // Use selected baby from context or first active baby
+            const babyToUse = selectedBaby || babiesData.find(b => b.is_active) || babiesData[0];
+            babyDob = babyToUse.date_of_birth;
+            const babyAge = calculateBabyAgeDetailed(babyDob);
+            babyAgeLabel = babyAge.label;
+            babyAgeMonths = getBabyAgeMonths(babyDob);
+            babyAgeWeeks = babyAge.weeks;
           }
+        } catch (error) {
+          console.error('Error fetching baby data:', error);
         }
 
         setUserData({
           userName: user.full_name || "User",
-          trimester: userType === 'pregnant' ? trimester : babyAgeLabel,
-          dueDate: user.due_date,
-          weeksPregnant: userType === 'pregnant' ? weeksPregnant : null,
-          userType,
+          trimester: babyAgeLabel,
+          dueDate: null,
+          weeksPregnant: null,
+          userType: HOME_USER_TYPE,
           babyAgeLabel: babyAgeLabel,
           babyAgeMonths: babyAgeMonths,
           babyAgeWeeks: babyAgeWeeks,
@@ -186,10 +163,10 @@ export default function Home() {
         console.error('Error fetching user data:', error);
         setUserData({
           userName: "Guest",
-          trimester: "Unknown",
+          trimester: "Baby Age",
           dueDate: null,
           weeksPregnant: null,
-          userType: 'pregnant',
+          userType: HOME_USER_TYPE,
           babyAgeLabel: 'Age unknown',
           babyAgeMonths: null,
           babyAgeWeeks: null,
@@ -273,7 +250,7 @@ export default function Home() {
 
     initializeNotifications();
     fetchData();
-  }, []);
+  }, [navigate, selectedBaby, storedUserType]);
 
   const handleAddBaby = async (babyData) => {
     setIsSubmittingBaby(true);
@@ -306,7 +283,7 @@ export default function Home() {
           trimester={userData.trimester}
           dueDate={userData.dueDate}
           weeksPregnant={userData.weeksPregnant}
-          userType={userData.userType}
+          userType={HOME_USER_TYPE}
           babyAgeLabel={userData.babyAgeLabel}
           babyAgeMonths={userData.babyAgeMonths}
           babyAgeWeeks={userData.babyAgeWeeks}
@@ -364,7 +341,7 @@ export default function Home() {
       )}
 
       {/* Bottom Navigation */}
-      <BottomNavigation activeTab="Home" userType={userData.userType} />
+      <BottomNavigation activeTab="Home" userType={HOME_USER_TYPE} />
     </div>
   );
 }

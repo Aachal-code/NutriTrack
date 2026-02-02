@@ -7,7 +7,6 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import BottomNavigation from '../components/BottomNavigation';
 import { getCurrentUser } from '../api';
 import '../styles/Vaccines.css';
@@ -40,7 +39,6 @@ const calculateTrimester = (dueDateString) => {
 };
 
 export default function PregnantVaccines() {
-  const navigate = useNavigate();
   const [currentTrimester, setCurrentTrimester] = useState('Unknown');
   const [weeksPregnant, setWeeksPregnant] = useState(null);
   const [loading, setLoading] = useState(true);

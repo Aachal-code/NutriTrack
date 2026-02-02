@@ -6,7 +6,7 @@
  * Fully modular with reusable sub-components
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import VaccinesHeader from '../components/VaccinesHeader';
 import VaccineCard from '../components/VaccineCard';
@@ -14,33 +14,32 @@ import KhopCard from '../components/KhopCard';
 import BottomNavigation from '../components/BottomNavigation';
 import NotificationService from '../services/NotificationService';
 import { useBabyContext } from '../context/BabyContext';
-import { getAllVaccines, getUserVaccineReminders, createVaccineReminder, updateVaccineReminderStatus, getCurrentUser, getBabies } from '../api';
-import vaccineScheduleConfig, { getNextDoseDate, isVaccineDueWithin, generateAutomaticVaccineReminders, calculateVaccineDateFromBirth } from '../utils/vaccineSchedule';
+import { getAllVaccines, getUserVaccineReminders, createVaccineReminder, updateVaccineReminderStatus, getCurrentUser } from '../api';
+import vaccineScheduleConfig, { getNextDoseDate, generateAutomaticVaccineReminders, calculateVaccineDateFromBirth } from '../utils/vaccineSchedule';
 import '../styles/Vaccines.css';
 
 export default function Vaccines() {
   const navigate = useNavigate();
-  const { babies, selectedBaby, setSelectedBaby } = useBabyContext();
+  const { selectedBaby } = useBabyContext();
   const [activeTab, setActiveTab] = useState('all');
   const [allVaccines, setAllVaccines] = useState([]);
   const [userReminders, setUserReminders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [autoSetupDone, setAutoSetupDone] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
   const [showKhopCard, setShowKhopCard] = useState(false);
   
   // Fetch all available vaccines and user reminders on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [vaccinesData, remindersData, user] = await Promise.all([
+        const [vaccinesData, remindersData] = await Promise.all([
           getAllVaccines(),
           getUserVaccineReminders().catch(() => []),
           getCurrentUser().catch(() => null)
         ]);
         
         setAllVaccines(vaccinesData || []);
-        setCurrentUser(user);
+        setUserReminders(remindersData || []);
+        setLoading(false);
 
         // Check if auto-setup was done for this baby using localStorage
         // Use baby ID to support multiple babies
@@ -51,22 +50,26 @@ export default function Vaccines() {
         if (!autoSetupDone) {
           const babyDOB = selectedBaby ? selectedBaby.date_of_birth : null;
           if (babyDOB && vaccinesData && vaccinesData.length > 0) {
-            await autoCreateAllVaccineReminders(vaccinesData, remindersData || [], babyDOB);
+            // Run auto-setup in background to avoid blocking UI
+            setTimeout(() => {
+              autoCreateAllVaccineReminders(vaccinesData, remindersData || [], babyDOB)
+                .then(() => {
+                  if (autoSetupKey) {
+                    localStorage.setItem(autoSetupKey, 'true');
+                  }
+                })
+                .catch((error) => {
+                  console.error('Error in auto-setup:', error);
+                });
+            }, 0);
             // Mark auto-setup as done for this baby
             if (autoSetupKey) {
               localStorage.setItem(autoSetupKey, 'true');
             }
-          } else {
-            setUserReminders(remindersData || []);
           }
-        } else {
-          // If already done, just use the fetched reminders
-          setUserReminders(remindersData || []);
         }
       } catch (error) {
         console.error('Error fetching vaccine data:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -159,8 +162,6 @@ export default function Vaccines() {
           }
         );
       }
-
-      setAutoSetupDone(true);
     } catch (error) {
       console.error('Error in auto-create vaccine reminders:', error);
       setUserReminders(existingReminders);
@@ -168,7 +169,7 @@ export default function Vaccines() {
   };
 
   // Get display vaccines: scheduled reminders + available vaccines with no reminders
-  const getDisplayVaccines = () => {
+  const displayVaccines = useMemo(() => {
     // Deduplicate userReminders by vaccine_name + dose_number combination
     // Keep the most recent version if duplicates exist
     const reminderMap = new Map();
@@ -234,11 +235,10 @@ export default function Vaccines() {
     });
 
     return displayVaccines;
-  };
+  }, [userReminders, allVaccines, selectedBaby]);
 
   // Filter vaccines based on active tab
-  const getFilteredVaccines = () => {
-    const displayVaccines = getDisplayVaccines();
+  const filteredVaccines = useMemo(() => {
     
     // Show only completed vaccines
     if (activeTab === 'completed') {
@@ -248,24 +248,18 @@ export default function Vaccines() {
     // Hide completed vaccines from other tabs
     const nonCompletedVaccines = displayVaccines.filter(v => v.status !== 'completed');
     
-    if (activeTab === 'baby') {
-      return nonCompletedVaccines.filter(v => 
-        (v.recipient_type === 'baby' || v.recipient_type === 'both') ||
-        (v.recipient === 'baby')
-      );
+    if (activeTab === 'recommended') {
+      return nonCompletedVaccines.filter(v => v.recommended === true);
     }
     return nonCompletedVaccines;
-  };
-
-  const filteredVaccines = getFilteredVaccines();
+  }, [displayVaccines, activeTab]);
 
   // Vaccine statistics for header cards (aligned with displayed data)
-  const displayVaccines = getDisplayVaccines();
-  const stats = {
+  const stats = useMemo(() => ({
     completed: displayVaccines.filter(v => v.status === 'completed').length,
     pending: displayVaccines.filter(v => v.status !== 'completed').length,
     overdue: displayVaccines.filter(v => v.status === 'overdue').length,
-  };
+  }), [displayVaccines]);
 
   const handleMarkDone = async (id) => {
     try {
@@ -407,10 +401,10 @@ export default function Vaccines() {
             All Vaccines
           </button>
           <button 
-            className={`vaccine-tab-btn ${activeTab === 'baby' ? 'active' : ''}`}
-            onClick={() => setActiveTab('baby')}
+            className={`vaccine-tab-btn ${activeTab === 'recommended' ? 'active' : ''}`}
+            onClick={() => setActiveTab('recommended')}
           >
-            Baby
+            ⭐ Recommended
           </button>
           <button 
             className={`vaccine-tab-btn ${activeTab === 'completed' ? 'active' : ''}`}

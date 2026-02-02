@@ -7,7 +7,6 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import GreetingCard from '../components/GreetingCard';
 import ReminderCard from '../components/ReminderCard';
 import NotificationBanner from '../components/NotificationBanner';
@@ -46,7 +45,6 @@ const calculateTrimester = (dueDateString) => {
 };
 
 export default function PregnantHome() {
-  const navigate = useNavigate();
   
   const [notificationPermission, setNotificationPermission] = useState(false);
   const [tip, setTip] = useState("Stay hydrated! Drink at least 8 glasses of water daily.");

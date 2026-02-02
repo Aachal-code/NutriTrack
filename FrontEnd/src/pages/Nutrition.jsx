@@ -17,9 +17,9 @@ import '../styles/Nutrition.css';
 export default function Nutrition() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('recommended');
-  const [nutritionTips, setNutritionTips] = useState([]);
-  const [safeFoods, setSafeFoods] = useState({ safe: [], unsafe: [] });
-  const [loading, setLoading] = useState(true);
+  const [_nutritionTips, setNutritionTips] = useState([]);
+  const [_safeFoods, setSafeFoods] = useState({ safe: [], unsafe: [] });
+  const [_loading, setLoading] = useState(true);
 
   // Fetch nutrition data on mount
   useEffect(() => {
