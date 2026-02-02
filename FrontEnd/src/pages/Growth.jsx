@@ -15,9 +15,8 @@ import BabyForm from '../components/BabyForm';
 import GrowthInput from '../components/GrowthInput';
 import BottomNavigation from '../components/BottomNavigation';
 import { useBabyContext } from '../context/BabyContext';
-import { calculateBabyAgeDetailed, getBabyAgeMonths } from '../utils/babyAge';
+import { calculateBabyAgeDetailed } from '../utils/babyAge';
 import { 
-  getBabies, 
   createBaby, 
   updateBaby,
   deleteBaby,
@@ -159,12 +158,8 @@ export default function Growth() {
     }
   };
 
-  const calculateAge = (dob) => {
+  const _calculateAge = (dob) => {
     return calculateBabyAgeDetailed(dob).label;
-  };
-
-  const getAgeInMonths = (dob) => {
-    return getBabyAgeMonths(dob);
   };
 
   const [milestones, setMilestones] = useState([
@@ -215,14 +210,13 @@ export default function Growth() {
   const chartBars = growthRecords
     .slice()
     .reverse()
-    .map((record, idx) => ({
+    .map((record) => ({
       date: new Date(record.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       weight: record.weight_kg,
       height: record.height_cm,
     }));
 
   const maxWeight = chartBars.length > 0 ? Math.max(...chartBars.map(b => b.weight)) : 0;
-  const maxHeight = chartBars.length > 0 ? Math.max(...chartBars.map(b => b.height)) : 0;
 
   const getChartBars = () => {
     return chartBars.map(bar => ({
@@ -276,10 +270,7 @@ export default function Growth() {
               <h2>Your Babies</h2>
               <button 
                 className="add-button"
-                onClick={() => {
-                  setEditingBaby(null);
-                  setShowBabyForm(true);
-                }}
+                onClick={() => navigate('/add-baby')}
               >
                 + Add Baby
               </button>
@@ -359,7 +350,7 @@ export default function Growth() {
                     <div className="current-stat-content">
                       <h3>Current Height</h3>
                       <p className="current-stat-value">{growthRecords[0].height_cm} cm</p>
-                      <p>Age: {calculateAge(selectedBaby.date_of_birth)}</p>
+                      <p>Age: {_calculateAge(selectedBaby.date_of_birth)}</p>
                     </div>
                   </div>
                 </div>
@@ -443,7 +434,7 @@ export default function Growth() {
         {activeTab === 'milestones' && selectedBaby && (
           <div className="milestones-section">
             <h2>🎯 Developmental Milestones: {selectedBaby.name}</h2>
-            <p className="milestones-subtitle">Age: {calculateAge(selectedBaby.date_of_birth)} months</p>
+            <p className="milestones-subtitle">Age: {_calculateAge(selectedBaby.date_of_birth)} months</p>
             <div className="milestones-list">
               {milestones.map((milestone) => (
                 <MilestoneCard

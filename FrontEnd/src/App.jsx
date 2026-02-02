@@ -29,6 +29,7 @@ import Onboarding from './pages/Onboarding'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Home from './pages/Home'
+import AddBaby from './pages/AddBaby'
 import Nutrition from './pages/Nutrition'
 import Vaccines from './pages/Vaccines'
 import Feeding from './pages/Feeding'
@@ -61,6 +62,10 @@ function App() {
           {/* Route 1: Home Page (Dashboard) - New Parent */}
           {/* Path: /home → Shows <Home /> component */}
           <Route path="/home" element={<Home />} />
+
+          {/* Route 1a: Add Baby Page - For adding new babies */}
+          {/* Path: /add-baby → Shows <AddBaby /> component */}
+          <Route path="/add-baby" element={<AddBaby />} />
 
           {/* Route 1b: Pregnant Home Page (Dashboard) - Pregnant Users */}
           {/* Path: /pregnant/home → Shows <PregnantHome /> component */}

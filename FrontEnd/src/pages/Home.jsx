@@ -14,10 +14,9 @@ import NotificationCard from '../components/NotificationCard';
 import NotificationBanner from '../components/NotificationBanner';
 import TipCard from '../components/TipCard';
 import BottomNavigation from '../components/BottomNavigation';
-import BabyForm from '../components/BabyForm';
 import NotificationService from '../services/NotificationService';
 import { useBabyContext } from '../context/BabyContext';
-import { getReminders, getDailyTip, getCurrentUser, getAuthToken, getUserVaccineReminders, getBabies, createBaby } from '../api';
+import { getReminders, getDailyTip, getCurrentUser, getAuthToken, getUserVaccineReminders, getBabies } from '../api';
 import { isVaccineDueWithin } from '../utils/vaccineSchedule';
 import { calculateBabyAgeDetailed, getBabyAgeMonths } from '../utils/babyAge';
 import '../styles/Home.css';
@@ -36,8 +35,6 @@ export default function Home() {
   const [tipError, setTipError] = useState(null);
   const [reminders, setReminders] = useState([]);
   const [_loading, setLoading] = useState(true);
-  const [showAddBabyModal, setShowAddBabyModal] = useState(false);
-  const [isSubmittingBaby, setIsSubmittingBaby] = useState(false);
   const [userData, setUserData] = useState({
     userName: "Loading...",
     trimester: "Baby Age",
@@ -252,21 +249,6 @@ export default function Home() {
     fetchData();
   }, [navigate, selectedBaby, storedUserType]);
 
-  const handleAddBaby = async (babyData) => {
-    setIsSubmittingBaby(true);
-    try {
-      await createBaby(babyData);
-      setShowAddBabyModal(false);
-      // Optionally, refresh the data or show a success message
-      alert('Baby added successfully!');
-    } catch (error) {
-      console.error('Error adding baby:', error);
-      alert(`Error adding baby: ${error.message}`);
-    } finally {
-      setIsSubmittingBaby(false);
-    }
-  };
-
   return (
     <div className="home-container">
       {/* Main Content */}
@@ -309,36 +291,12 @@ export default function Home() {
       {/* Floating Add Baby Button */}
       <button 
         className="floating-add-button"
-        onClick={() => setShowAddBabyModal(true)}
+        onClick={() => navigate('/add-baby')}
         title="Add Baby"
         aria-label="Add Baby"
       >
         +
       </button>
-
-      {/* Add Baby Modal */}
-      {showAddBabyModal && (
-        <div className="modal-overlay" onClick={() => setShowAddBabyModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Add Baby</h2>
-              <button 
-                className="modal-close-button"
-                onClick={() => setShowAddBabyModal(false)}
-                aria-label="Close"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="modal-body">
-              <BabyForm 
-                onSubmit={handleAddBaby}
-                isLoading={isSubmittingBaby}
-              />
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Bottom Navigation */}
       <BottomNavigation activeTab="Home" userType={HOME_USER_TYPE} />
