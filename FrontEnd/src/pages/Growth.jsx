@@ -272,13 +272,6 @@ export default function Growth() {
             👶 Babies
           </button>
           <button 
-            className={`growth-tab-btn ${activeTab === 'tracking' ? 'active' : ''}`}
-            onClick={() => setActiveTab('tracking')}
-            disabled={!selectedBaby}
-          >
-            📈 Growth Tracking
-          </button>
-          <button 
             className={`growth-tab-btn ${activeTab === 'milestones' ? 'active' : ''}`}
             onClick={() => setActiveTab('milestones')}
             disabled={!selectedBaby}

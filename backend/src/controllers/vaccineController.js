@@ -7,7 +7,7 @@
  * - Tracking vaccination status and doses
  */
 
-import { Vaccine, Reminder } from '../models/index.js';
+import { Vaccine, Reminder, Baby } from '../models/index.js';
 
 /**
  * Get all vaccines from database
@@ -93,11 +93,58 @@ export const getMotherVaccines = async (req, res, next) => {
 export const getUserVaccineReminders = async (req, res, next) => {
   try {
     const userId = req.user.id;
+    const { baby_id } = req.query;
+    const babyId = baby_id ? parseInt(baby_id, 10) : null;
+
+    const whereClause = { user_id: userId, type: 'vaccine' };
+    if (babyId) {
+      whereClause.baby_id = babyId;
+    }
+
+    // If baby-specific request and no reminders exist, migrate legacy reminders (baby_id null)
+    if (babyId) {
+      const existingForBaby = await Reminder.count({
+        where: { user_id: userId, type: 'vaccine', baby_id: babyId },
+      });
+
+      if (existingForBaby === 0) {
+        await Reminder.update(
+          { baby_id: babyId },
+          { where: { user_id: userId, type: 'vaccine', baby_id: null } }
+        );
+      }
+    }
 
     const reminders = await Reminder.findAll({
-      where: { user_id: userId, type: 'vaccine' },
+      where: whereClause,
       order: [['reminder_date', 'ASC']],
     });
+
+    // Fix birth-dose reminders to match baby's DOB (prevents 7-day offset)
+    if (babyId && reminders.length > 0) {
+      const baby = await Baby.findOne({ where: { id: babyId, user_id: userId } });
+      if (baby?.date_of_birth) {
+        const dob = new Date(baby.date_of_birth);
+        const dobString = `${dob.getFullYear()}-${String(dob.getMonth() + 1).padStart(2, '0')}-${String(dob.getDate()).padStart(2, '0')}`;
+
+        const birthDoseIds = reminders
+          .filter(r => r.age_due_months === 0 && r.reminder_date !== dobString)
+          .map(r => r.id);
+
+        if (birthDoseIds.length > 0) {
+          await Reminder.update(
+            { reminder_date: dobString },
+            { where: { id: birthDoseIds } }
+          );
+
+          reminders.forEach(r => {
+            if (birthDoseIds.includes(r.id)) {
+              r.reminder_date = dobString;
+            }
+          });
+        }
+      }
+    }
 
     return res.json(reminders);
   } catch (error) {
@@ -127,6 +174,7 @@ export const createVaccineReminder = async (req, res, next) => {
       age_due_months,
       description,
       vaccine_icon,
+      baby_id,
     } = req.body;
 
     // Normalize date to YYYY-MM-DD format for consistent comparison
@@ -135,13 +183,23 @@ export const createVaccineReminder = async (req, res, next) => {
       normalizedDate = reminder_date.split('T')[0];
     }
 
+    // For birth-dose vaccines, align reminder date with baby's DOB if available
+    if (age_due_months === 0 && baby_id) {
+      const baby = await Baby.findOne({ where: { id: baby_id, user_id: userId } });
+      if (baby?.date_of_birth) {
+        const dob = new Date(baby.date_of_birth);
+        normalizedDate = `${dob.getFullYear()}-${String(dob.getMonth() + 1).padStart(2, '0')}-${String(dob.getDate()).padStart(2, '0')}`;
+      }
+    }
+
     // Check if reminder already exists for this vaccine and dose (most important check)
     const existingReminder = await Reminder.findOne({
       where: {
         user_id: userId,
         type: 'vaccine',
         vaccine_name: vaccine_name,
-        dose_number: dose_number || 1
+        dose_number: dose_number || 1,
+        baby_id: baby_id || null,
       }
     });
 
@@ -153,6 +211,7 @@ export const createVaccineReminder = async (req, res, next) => {
     // Create new reminder with all provided information
     const newReminder = await Reminder.create({
       user_id: userId,
+      baby_id: baby_id || null,
       type: 'vaccine',
       title: vaccine_name,
       vaccine_name,
@@ -200,9 +259,17 @@ export const updateVaccineReminderStatus = async (req, res, next) => {
     }
 
     // Update reminder status and record dose date
+    let normalizedDoseDate = last_dose_date;
+    if (!normalizedDoseDate) {
+      const now = new Date();
+      normalizedDoseDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    } else if (normalizedDoseDate.includes('T')) {
+      normalizedDoseDate = normalizedDoseDate.split('T')[0];
+    }
+
     await reminder.update({
       status: status || 'completed',
-      last_dose_date: last_dose_date || new Date(),
+      last_dose_date: normalizedDoseDate,
     });
 
     return res.json(reminder);

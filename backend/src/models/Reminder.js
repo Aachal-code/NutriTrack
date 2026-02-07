@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../db/sequelize.js';
 import User from './User.js';
+import Baby from './Baby.js';
 
 const Reminder = sequelize.define('Reminder', {
   id: {
@@ -12,6 +13,14 @@ const Reminder = sequelize.define('Reminder', {
     type: DataTypes.INTEGER,
     references: {
       model: User,
+      key: 'id',
+    },
+  },
+  baby_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: Baby,
       key: 'id',
     },
   },
@@ -71,5 +80,8 @@ const Reminder = sequelize.define('Reminder', {
 
 Reminder.belongsTo(User, { foreignKey: 'user_id' });
 User.hasMany(Reminder, { foreignKey: 'user_id' });
+
+Reminder.belongsTo(Baby, { foreignKey: 'baby_id' });
+Baby.hasMany(Reminder, { foreignKey: 'baby_id' });
 
 export default Reminder;

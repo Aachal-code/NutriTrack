@@ -26,7 +26,7 @@ const HOME_USER_TYPE = 'newParent';
 
 export default function Home() {
   const navigate = useNavigate();
-  const { selectedBaby, refreshBabies } = useBabyContext();
+  const { babies, selectedBaby, setSelectedBaby, refreshBabies } = useBabyContext();
   const storedUserType = localStorage.getItem('userType') || localStorage.getItem('selectedStage');
   
   // State for notification permission
@@ -61,7 +61,9 @@ export default function Home() {
       const token = getAuthToken();
       if (token) {
         try {
-          const remindersData = await getUserVaccineReminders();
+          const remindersData = selectedBaby
+            ? await getUserVaccineReminders(selectedBaby.id)
+            : [];
           setVaccinesData(remindersData || []);
 
           // Get vaccines due within 7 days
@@ -282,6 +284,29 @@ export default function Home() {
           babyAgeWeeks={userData.babyAgeWeeks}
           babyDob={userData.babyDob}
         />
+
+        {babies && babies.length > 1 && (
+          <div className="home-baby-selector">
+            <label htmlFor="home-baby-select">Select Baby</label>
+            <select
+              id="home-baby-select"
+              value={selectedBaby?.id || ''}
+              onChange={(event) => {
+                const selectedId = parseInt(event.target.value, 10);
+                const nextBaby = babies.find(b => b.id === selectedId);
+                if (nextBaby) {
+                  setSelectedBaby(nextBaby);
+                }
+              }}
+            >
+              {babies.map((baby) => (
+                <option key={baby.id} value={baby.id}>
+                  {baby.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Baby Profile Card - Shows age graph and DOB */}
         <BabyProfileCard

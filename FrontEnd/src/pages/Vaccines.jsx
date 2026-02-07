@@ -14,18 +14,24 @@ import KhopCard from '../components/KhopCard';
 import BottomNavigation from '../components/BottomNavigation';
 import NotificationService from '../services/NotificationService';
 import { useBabyContext } from '../context/BabyContext';
-import { getAllVaccines, getUserVaccineReminders, createVaccineReminder, updateVaccineReminderStatus, getCurrentUser } from '../api';
+import { getAllVaccines, getUserVaccineReminders, createVaccineReminder, updateVaccineReminderStatus } from '../api';
 import vaccineScheduleConfig, { getNextDoseDate, generateAutomaticVaccineReminders, calculateVaccineDateFromBirth } from '../utils/vaccineSchedule';
 import '../styles/Vaccines.css';
 
 export default function Vaccines() {
   const navigate = useNavigate();
-  const { selectedBaby } = useBabyContext();
+  const { babies, selectedBaby, setSelectedBaby } = useBabyContext();
   const [activeTab, setActiveTab] = useState('all');
   const [allVaccines, setAllVaccines] = useState([]);
   const [userReminders, setUserReminders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showKhopCard, setShowKhopCard] = useState(false);
+
+  useEffect(() => {
+    if (!selectedBaby && babies && babies.length > 0) {
+      setSelectedBaby(babies[0]);
+    }
+  }, [babies, selectedBaby, setSelectedBaby]);
   
   // Fetch all available vaccines and user reminders on mount
   useEffect(() => {
@@ -33,8 +39,7 @@ export default function Vaccines() {
       try {
         const [vaccinesData, remindersData] = await Promise.all([
           getAllVaccines(),
-          getUserVaccineReminders().catch(() => []),
-          getCurrentUser().catch(() => null)
+          selectedBaby ? getUserVaccineReminders(selectedBaby.id).catch(() => []) : Promise.resolve([])
         ]);
         
         setAllVaccines(vaccinesData || []);
@@ -91,7 +96,7 @@ export default function Vaccines() {
       localStorage.setItem(autoSetupKey, 'true');
       
       // Refresh vaccine reminders to show newly created reminders
-      const remindersData = await getUserVaccineReminders();
+      const remindersData = await getUserVaccineReminders(selectedBaby?.id);
       setUserReminders(remindersData || []);
       
       alert('✓ Vaccine reminders auto-created successfully!');
@@ -140,12 +145,16 @@ export default function Vaccines() {
           const reminderDataList = generateAutomaticVaccineReminders(
             [vaccine],
             babyBirthDate,
-            'baby'
+            'baby',
+            selectedBaby?.id || null
           );
 
           // Create all doses for this vaccine
           for (const reminderData of reminderDataList) {
-            const created = await createVaccineReminder(reminderData);
+            const created = await createVaccineReminder({
+              ...reminderData,
+              baby_id: selectedBaby?.id || null,
+            });
             createdReminders.push(created);
           }
         } catch (error) {
@@ -303,15 +312,17 @@ export default function Vaccines() {
         // Check if next dose already exists
         const nextDoseExists = userReminders.some(
           r => r.vaccine_name === vaccineToMark.vaccine_name && 
-               r.dose_number === currentDose + 1
+               r.dose_number === currentDose + 1 &&
+               (r.baby_id || null) === (selectedBaby?.id || null)
         );
 
         if (!nextDoseExists) {
           // Calculate next dose date
+          const baseDate = vaccineToMark.last_dose_date || vaccineToMark.reminder_date || new Date().toISOString().split('T')[0];
           const nextDoseDate = getNextDoseDate(
             vaccineToMark.vaccine_name,
             currentDose,
-            new Date().toISOString()
+            baseDate
           );
 
           if (nextDoseDate) {
@@ -325,6 +336,7 @@ export default function Vaccines() {
               age_due_months: 0,
               description: vaccineToMark.description,
               vaccine_icon: vaccineToMark.vaccine_icon,
+              baby_id: selectedBaby?.id || null,
             };
 
             await createVaccineReminder(nextDoseReminder);
@@ -344,7 +356,7 @@ export default function Vaccines() {
       }
 
       // Step 3: Refresh all vaccine reminders from server to ensure UI is up to date
-      const refreshedReminders = await getUserVaccineReminders();
+      const refreshedReminders = await getUserVaccineReminders(selectedBaby?.id);
       setUserReminders(refreshedReminders || []);
     } catch (error) {
       console.error('Error marking vaccine as done:', error);
@@ -378,6 +390,29 @@ export default function Vaccines() {
         onBack={() => navigate('/home')}
         onKhopCard={() => setShowKhopCard(true)}
       />
+
+      {babies && babies.length > 1 && (
+        <div className="vaccines-baby-selector">
+          <label htmlFor="vaccines-baby-select">Select Baby</label>
+          <select
+            id="vaccines-baby-select"
+            value={selectedBaby?.id || ''}
+            onChange={(event) => {
+              const selectedId = parseInt(event.target.value, 10);
+              const nextBaby = babies.find(b => b.id === selectedId);
+              if (nextBaby) {
+                setSelectedBaby(nextBaby);
+              }
+            }}
+          >
+            {babies.map((baby) => (
+              <option key={baby.id} value={baby.id}>
+                {baby.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="vaccines-main">

@@ -286,8 +286,9 @@ export async function getVaccineById(vaccineId) {
   return request(`/api/vaccines/${vaccineId}`);
 }
 
-export async function getUserVaccineReminders() {
-  return request('/api/vaccines/reminders/user');
+export async function getUserVaccineReminders(babyId = null) {
+  const query = babyId ? `?baby_id=${babyId}` : '';
+  return request(`/api/vaccines/reminders/user${query}`);
 }
 
 export async function createVaccineReminder(vaccineData) {

@@ -209,7 +209,7 @@ export const calculateVaccineDateFromBirth = (birthDateString, ageMonths) => {
  * @param {string} userType - 'baby' or 'mother' to filter vaccines
  * @returns {Array} Array of reminder objects ready to create
  */
-export const generateAutomaticVaccineReminders = (allVaccines, birthDateString, userType = 'baby') => {
+export const generateAutomaticVaccineReminders = (allVaccines, birthDateString, userType = 'baby', babyId = null) => {
   if (!birthDateString) return [];
 
   const reminders = [];
@@ -229,8 +229,11 @@ export const generateAutomaticVaccineReminders = (allVaccines, birthDateString, 
       
       if (vaccineDueDate) {
         // Set reminder date to 1 week (7 days) before the actual vaccine due date
+        // For birth-dose vaccines (ageMonths 0), keep reminder date on the same day
         const reminderDate = new Date(vaccineDueDate);
-        reminderDate.setDate(reminderDate.getDate() - 7);
+        if (doseTiming.ageMonths !== 0) {
+          reminderDate.setDate(reminderDate.getDate() - 7);
+        }
         
         // Convert Date to YYYY-MM-DD string (no timezone shift)
         const dateString = `${reminderDate.getFullYear()}-${String(reminderDate.getMonth() + 1).padStart(2, '0')}-${String(reminderDate.getDate()).padStart(2, '0')}`;
@@ -246,6 +249,7 @@ export const generateAutomaticVaccineReminders = (allVaccines, birthDateString, 
           vaccine_icon: vaccine.emoji,
           status: 'pending',
           note: doseTiming.note,
+          baby_id: babyId,
         });
       }
     });
