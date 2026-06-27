@@ -70,7 +70,7 @@ flowchart TB
   class Static,Feeds,Foods,Vaccines content;
 ```
 
-## 2. Scenario Based Analysis - Use Case Diagram
+## 2. Simple Use Case Diagram
 
 ```mermaid
 %%{init: {
@@ -88,28 +88,26 @@ flowchart TB
     "clusterBorder": "#B8D6CF"
   }
 }}%%
-flowchart TB
+flowchart LR
   Parent([Parent / Guardian])
-  Partner([Partner])
 
   subgraph System[NutriTrack System]
     direction TB
-    UC1([Sign in / manage account])
+    UC1([Register / Sign in])
     UC2([Manage baby profile])
-    UC3([Track growth and reminders])
-    UC4([View feeding and vaccine guidance])
-    UC5([Invite or accept partner access])
+    UC3([Track growth])
+    UC4([View guidance])
+    UC5([Set reminders])
   end
+
+  Partner([Partner])
 
   Parent --> UC1
   Parent --> UC2
   Parent --> UC3
   Parent --> UC4
   Parent --> UC5
-  Partner --> UC5
-
-  UC5 -. shared access .-> UC2
-  UC3 -. reminders .-> UC4
+  Partner --> UC1
 
   classDef actor fill:#FFF4D6,stroke:#B08A1F,color:#4A3700,stroke-width:1.6px;
   classDef usecase fill:#F5FBF9,stroke:#3A7D6D,color:#183B35,stroke-width:1.2px;
@@ -118,7 +116,7 @@ flowchart TB
   class UC1,UC2,UC3,UC4,UC5 usecase;
 ```
 
-## 3. Behavioral Analysis - State Chart Diagram
+## 3. Simple State Chart Diagram
 
 ```mermaid
 %%{init: {
@@ -133,37 +131,27 @@ flowchart TB
     "tertiaryColor": "#F7FAF9",
     "background": "transparent"
   },
-  "state": { "nodeSpacing": 28, "rankSpacing": 30 }
+  "state": { "nodeSpacing": 20, "rankSpacing": 20 }
 }}%%
 stateDiagram-v2
   [*] --> LoggedOut
 
-  LoggedOut --> Authenticating: sign in / register
-  Authenticating --> Dashboard: auth success
-  Authenticating --> LoggedOut: auth failed
+  LoggedOut --> Dashboard: sign in
+  Dashboard --> LoggedOut: sign out
 
   Dashboard --> EditingBaby: update baby profile
   Dashboard --> RecordingGrowth: add growth record
-  Dashboard --> ManagingReminders: create or complete reminder
+  Dashboard --> ManagingReminders: manage reminders
   Dashboard --> ViewingGuidance: open guidance
-  Dashboard --> LoggedOut: sign out
 
-  EditingBaby --> Dashboard: save changes
-  RecordingGrowth --> Dashboard: save record
-  ManagingReminders --> Dashboard: save reminder
-  ViewingGuidance --> Dashboard: close guidance
-
-  ManagingReminders --> NotificationReady: reminder due
-  NotificationReady --> Dashboard: notify parent
-
-  state Dashboard {
-    [*] --> HomeView
-    HomeView --> HomeView: browse home
-  }
+  EditingBaby --> Dashboard: save
+  RecordingGrowth --> Dashboard: save
+  ManagingReminders --> Dashboard: save
+  ViewingGuidance --> Dashboard: close
 
   classDef stateNode fill:#F5FBF9,stroke:#3A7D6D,color:#183B35,stroke-width:1.2px;
 
-  class LoggedOut,Authenticating,Dashboard,EditingBaby,RecordingGrowth,ManagingReminders,ViewingGuidance,NotificationReady stateNode;
+  class LoggedOut,Dashboard,EditingBaby,RecordingGrowth,ManagingReminders,ViewingGuidance stateNode;
 ```
 
 ## 4. Class Diagram
