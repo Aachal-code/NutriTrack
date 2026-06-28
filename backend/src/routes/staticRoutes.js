@@ -5,6 +5,7 @@ import {
   getVaccineSchedule,
   getFeedingGuide,
   getDailyTip,
+  getGrowthMilestones,
 } from '../controllers/staticController.js';
 
 const router = express.Router();
@@ -38,5 +39,11 @@ router.get('/feeding-guide', getFeedingGuide);
  * Get a daily tip
  */
 router.get('/daily-tip', getDailyTip);
+
+/**
+ * GET /static/growth-milestones
+ * Get growth milestone reference data for months 0-12
+ */
+router.get('/growth-milestones', getGrowthMilestones);
 
 export default router;

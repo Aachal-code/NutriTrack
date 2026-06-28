@@ -552,6 +552,29 @@
   gap: 16px;
 }
 
+.tracking-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.growth-back-btn {
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: var(--growth-purple);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  line-height: 1;
+  transition: all 0.2s;
+}
+
+.growth-back-btn:hover {
+  background: rgba(168, 85, 247, 0.25);
+  border-color: var(--growth-purple);
+}
+
 .milestones-section {
   display: flex;
   flex-direction: column;
@@ -590,6 +613,121 @@
   font-size: 14px;
   color: var(--text-muted);
   margin: 0;
+}
+
+/* ===== DEVELOPMENTAL MILESTONES CARD ===== */
+.dev-milestones-card {
+  background: var(--card-dark);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  margin-top: 16px;
+}
+
+.dev-milestones-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.dev-milestones-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.dev-milestones-age {
+  font-size: 12px;
+  color: var(--growth-purple);
+  background: var(--light-growth-purple);
+  padding: 3px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.dev-milestones-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.dev-progress-track {
+  flex: 1;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.dev-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--growth-purple), #c084fc);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.dev-progress-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.dev-milestones-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dev-milestone-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--card-muted);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dev-milestone-item:hover {
+  border-color: var(--growth-purple);
+}
+
+.dev-milestone-item.completed {
+  border-color: var(--success-green);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.dev-milestone-item:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dev-milestone-check {
+  font-size: 16px;
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
+}
+
+.dev-milestone-emoji {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.dev-milestone-label {
+  font-size: 13px;
+  color: var(--text-main);
+  line-height: 1.3;
+  flex: 1;
 }
 
 /* ===== GROWTH RECORDS CARD ===== */

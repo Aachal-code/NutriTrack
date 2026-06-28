@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GrowthHeader from '../components/GrowthHeader';
-import MilestoneCard from '../components/MilestoneCard';
 import BabyCard from '../components/BabyCard';
 import BabyForm from '../components/BabyForm';
 import GrowthInput from '../components/GrowthInput';
+import DevelopmentalMilestones from '../components/DevelopmentalMilestones';
 import LoadingSpinner from '../components/LoadingSpinner';
 import BottomNavigation from '../components/BottomNavigation';
 import { useToast } from '../context/ToastContext';
@@ -19,24 +19,12 @@ import {
   createGrowthRecord,
   deleteGrowthRecord,
   updateGrowthRecord,
-  getMilestones,
-  updateMilestone,
 } from '../api';
 import '../styles/Growth.css';
-
-const DEFAULT_MILESTONES = [
-  { key: 'first_smile', name: 'First smile', emoji: '😊', ageMonths: 2 },
-  { key: 'holds_head_up', name: 'Holds head up', emoji: '💪', ageMonths: 3 },
-  { key: 'rolls_over', name: 'Rolls over', emoji: '🔄', ageMonths: 4 },
-  { key: 'sits_up', name: 'Sits up', emoji: '🪑', ageMonths: 6 },
-  { key: 'crawls', name: 'Crawls', emoji: '🍃', ageMonths: 8 },
-  { key: 'stands', name: 'Stands with support', emoji: '🧍', ageMonths: 10 },
-];
 
 export default function Growth() {
   const navigate = useNavigate();
   const { babies, selectedBaby, setSelectedBaby, setBabies } = useBabyContext();
-  const [activeTab, setActiveTab] = useState('babies');
   const [growthRecords, setGrowthRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showBabyForm, setShowBabyForm] = useState(false);
@@ -45,8 +33,6 @@ export default function Growth() {
   const [editingRecord, setEditingRecord] = useState(null);
   const [babyFormLoading, setBabyFormLoading] = useState(false);
   const [growthInputLoading, setGrowthInputLoading] = useState(false);
-  const [milestones, setMilestones] = useState([]);
-  const [milestonesLoading, setMilestonesLoading] = useState(false);
   const [trendAnalysis, setTrendAnalysis] = useState(null);
   const [chartMetric, setChartMetric] = useState('weight');
   const [chartValues, setChartValues] = useState([]);
@@ -58,10 +44,8 @@ export default function Growth() {
     setLoading(true);
     if (selectedBaby) {
       fetchGrowthRecords(selectedBaby.id);
-      fetchMilestones(selectedBaby.id);
     } else {
       setGrowthRecords([]);
-      setMilestones([]);
       setChartValues([]);
       setTrendAnalysis(null);
       setLoading(false);
@@ -88,18 +72,6 @@ export default function Growth() {
     }
   };
 
-  const fetchMilestones = async (babyId) => {
-    setMilestonesLoading(true);
-    try {
-      const data = await getMilestones(babyId);
-      setMilestones(data || []);
-    } catch (error) {
-      console.error('Error fetching milestones:', error);
-    } finally {
-      setMilestonesLoading(false);
-    }
-  };
-
   const handleAddBaby = async (babyData) => {
     setBabyFormLoading(true);
     try {
@@ -109,7 +81,6 @@ export default function Growth() {
       setShowBabyForm(false);
       setEditingBaby(null);
       fetchGrowthRecords(newBaby.id);
-      fetchMilestones(newBaby.id);
       addToast('Baby added successfully!', 'success');
     } catch (error) {
       console.error('Error adding baby:', error);
@@ -226,41 +197,14 @@ export default function Growth() {
     setEditingRecord(null);
   };
 
+  const handleBackToBabies = () => {
+    setSelectedBaby(null);
+    setGrowthRecords([]);
+    setShowGrowthInput(false);
+  };
+
   const _calculateAge = (dob) => {
     return calculateBabyAgeDetailed(dob).label;
-  };
-
-  const toggleMilestone = async (milestoneId, currentCompleted) => {
-    try {
-      const newCompleted = !currentCompleted;
-      const completedDate = newCompleted ? new Date().toISOString().split('T')[0] : null;
-      await updateMilestone(milestoneId, { completed: newCompleted, completed_date: completedDate });
-      setMilestones(milestones.map(m =>
-        m.id === milestoneId ? { ...m, completed: newCompleted, completed_date: completedDate } : m
-      ));
-      addToast(newCompleted ? 'Milestone completed!' : 'Milestone unmarked', 'success');
-    } catch (error) {
-      console.error('Error updating milestone:', error);
-      addToast('Failed to update milestone', 'error');
-    }
-  };
-
-  const handleEditMilestoneNotes = async (milestoneId, notes) => {
-    try {
-      await updateMilestone(milestoneId, { notes });
-      setMilestones(milestones.map(m => m.id === milestoneId ? { ...m, notes } : m));
-    } catch (error) {
-      console.error('Error updating milestone notes:', error);
-    }
-  };
-
-  const handleEditMilestoneDate = async (milestoneId, completedDate) => {
-    try {
-      await updateMilestone(milestoneId, { completed: true, completed_date: completedDate });
-      setMilestones(milestones.map(m => m.id === milestoneId ? { ...m, completed_date: completedDate } : m));
-    } catch (error) {
-      console.error('Error updating milestone date:', error);
-    }
   };
 
   const metric = metricConfig[chartMetric];
@@ -299,34 +243,7 @@ export default function Growth() {
 
       <div className="growth-main">
 
-        <div className="growth-tabs">
-          <button
-            className={`growth-tab-btn ${activeTab === 'babies' ? 'active' : ''}`}
-            onClick={() => setActiveTab('babies')}
-          >
-            👶 Babies
-          </button>
-          {selectedBaby && (
-            <button
-              className={`growth-tab-btn ${activeTab === 'tracking' ? 'active' : ''}`}
-              onClick={() => {
-                setActiveTab('tracking');
-                fetchGrowthRecords(selectedBaby.id);
-              }}
-            >
-              📈 Tracking
-            </button>
-          )}
-          <button
-            className={`growth-tab-btn ${activeTab === 'milestones' ? 'active' : ''}`}
-            onClick={() => setActiveTab('milestones')}
-            disabled={!selectedBaby}
-          >
-            🎯 Milestones
-          </button>
-        </div>
-
-        {activeTab === 'babies' && (
+        {!selectedBaby && (
           <div className="babies-section">
             <div className="section-header">
               <h2>Your Babies</h2>
@@ -363,7 +280,6 @@ export default function Growth() {
                       const baby = babies.find(b => b.id === babyId);
                       setSelectedBaby(baby);
                       fetchGrowthRecords(babyId);
-                      setActiveTab('tracking');
                     }}
                   />
                 ))}
@@ -372,10 +288,13 @@ export default function Growth() {
           </div>
         )}
 
-        {activeTab === 'tracking' && selectedBaby && (
+        {selectedBaby && (
           <div className="tracking-section">
             <div className="section-header">
-              <h2>📈 Growth Tracking: {selectedBaby.name}</h2>
+              <div className="tracking-header-left">
+                <button className="growth-back-btn" onClick={handleBackToBabies}>←</button>
+                <h2>📈 {selectedBaby.name}</h2>
+              </div>
               <button
                 className="add-button"
                 onClick={() => {
@@ -574,6 +493,11 @@ export default function Growth() {
               </>
             )}
 
+            <DevelopmentalMilestones
+              selectedBaby={selectedBaby}
+              babyAgeMonths={calculateBabyAgeDetailed(selectedBaby.date_of_birth).months ?? 0}
+            />
+
             {growthRecords.length === 0 && !showGrowthInput && (
               <div className="empty-state">
                 <p className="empty-icon">📊</p>
@@ -583,39 +507,6 @@ export default function Growth() {
           </div>
         )}
 
-        {activeTab === 'milestones' && selectedBaby && (
-          <div className="milestones-section">
-            <h2>🎯 Developmental Milestones: {selectedBaby.name}</h2>
-            <p className="milestones-subtitle">Age: {_calculateAge(selectedBaby.date_of_birth)} months</p>
-            {milestonesLoading ? (
-              <div className="growth-skeleton">
-                <div className="growth-skeleton-line wide" />
-                <div className="growth-skeleton-line" />
-                <div className="growth-skeleton-line medium" />
-              </div>
-            ) : (
-              <div className="milestones-list">
-                {milestones.map((milestone) => {
-                  const defaultM = DEFAULT_MILESTONES.find(dm => dm.key === milestone.milestone_key);
-                  return (
-                    <MilestoneCard
-                      key={milestone.id}
-                      name={milestone.milestone_name}
-                      emoji={defaultM?.emoji || '🎯'}
-                      ageInMonths={milestone.expected_age_months}
-                      completed={milestone.completed}
-                      completedDate={milestone.completed_date}
-                      notes={milestone.notes}
-                      onClick={() => toggleMilestone(milestone.id, milestone.completed)}
-                      onEditNotes={(notes) => handleEditMilestoneNotes(milestone.id, notes)}
-                      onEditDate={(date) => handleEditMilestoneDate(milestone.id, date)}
-                    />
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       <BottomNavigation activeTab="Growth" />
@@ -654,12 +545,6 @@ export default function Growth() {
               Record your baby's weight and height weekly. The chart shows progress over time, while
               WHO badges indicate growth category. Trend arrows show change since the last measurement.
               More data points give a clearer growth picture.
-            </p>
-
-            <h3>Developmental Milestones</h3>
-            <p>
-              Milestones are age-typical skills (e.g., first smile, rolling over). Track when your baby
-              achieves each one. These are automatically created when you add a baby.
             </p>
 
             <button className="growth-info-close" onClick={() => setShowInfoModal(false)}>

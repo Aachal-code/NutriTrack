@@ -190,7 +190,12 @@ export async function getBabyGrowthRecords(babyId) {
   return request(`/api/babies/${babyId}/growth`);
 }
 
-// ===== Milestones =====
+// ===== Static Growth Milestones Reference =====
+export async function getGrowthMilestonesStatic() {
+  return request('/api/static/growth-milestones');
+}
+
+// ===== Per-Baby Milestone Progress =====
 export async function getMilestones(babyId) {
   return request(`/api/milestones/${babyId}`);
 }
