@@ -37,7 +37,7 @@ export default function Signup() {
     email: '',
     password: '',
     userType: 'pregnant',
-    dueDate: ''
+    dueDate: '',
   });
   const navigate = useNavigate();
   const location = useLocation();
@@ -123,7 +123,7 @@ export default function Signup() {
         email: formData.email,
         password: formData.password,
         userType: formData.userType,
-        dueDate: formData.userType === 'pregnant' ? formData.dueDate : ''
+        dueDate: formData.userType === 'pregnant' ? formData.dueDate : '',
       });
 
       // Store user type for later use in navigation

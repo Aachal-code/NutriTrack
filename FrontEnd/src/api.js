@@ -86,7 +86,6 @@ export async function getCurrentUser() {
 }
 
 export async function register({ fullName, email, dueDate, userType, password }) {
-  // Send dates as YYYY-MM-DD strings (no timezone conversion needed)
   return request('/api/auth/register', {
     method: 'POST',
     headers: {
@@ -389,6 +388,30 @@ export async function deleteFood(foodId) {
   return request(`/api/foods/delete/${foodId}`, {
     method: 'DELETE',
   });
+}
+
+export async function getFoodsByNutrientGroup(group) {
+  return request(`/api/foods/nutrient-group/${encodeURIComponent(group)}`);
+}
+
+export async function getFoodsByTrimester(trimester) {
+  return request(`/api/foods/trimester/${trimester}`);
+}
+
+export async function getFoodsByDietType(dietType) {
+  return request(`/api/foods/diet-type/${encodeURIComponent(dietType)}`);
+}
+
+export async function searchFoods(params = {}) {
+  const query = new URLSearchParams();
+  if (params.q) query.set('q', params.q);
+  if (params.dietType) query.set('dietType', params.dietType);
+  const qs = query.toString();
+  return request(`/api/foods/search${qs ? '?' + qs : ''}`);
+}
+
+export async function getNutrientGroups() {
+  return request('/api/foods/nutrient-groups');
 }
 
 // ===== Auth Token Management =====
