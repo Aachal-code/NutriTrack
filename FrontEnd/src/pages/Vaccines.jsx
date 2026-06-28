@@ -13,6 +13,7 @@ import VaccineCard from '../components/VaccineCard';
 import KhopCard from '../components/KhopCard';
 import BottomNavigation from '../components/BottomNavigation';
 import NotificationService from '../services/NotificationService';
+import { useToast } from '../context/ToastContext';
 import { useBabyContext } from '../context/BabyContext';
 import { getAllVaccines, getUserVaccineReminders, createVaccineReminder, updateVaccineReminderStatus } from '../api';
 import vaccineScheduleConfig, { getNextDoseDate, generateAutomaticVaccineReminders, calculateVaccineDateFromBirth } from '../utils/vaccineSchedule';
@@ -20,8 +21,9 @@ import '../styles/Vaccines.css';
 
 export default function Vaccines() {
   const navigate = useNavigate();
-  const { babies, selectedBaby, setSelectedBaby } = useBabyContext();
   const [activeTab, setActiveTab] = useState('all');
+  const { addToast } = useToast();
+  const { babies, selectedBaby, setSelectedBaby } = useBabyContext();
   const [allVaccines, setAllVaccines] = useState([]);
   const [userReminders, setUserReminders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -81,10 +83,9 @@ export default function Vaccines() {
     fetchData();
   }, [selectedBaby]);
 
-  // Manual trigger for auto-setup
   const handleManualAutoSetup = async () => {
     if (!selectedBaby || !allVaccines.length) {
-      alert('Please select a baby first');
+      addToast('Please select a baby first', 'error');
       return;
     }
 
@@ -99,10 +100,10 @@ export default function Vaccines() {
       const remindersData = await getUserVaccineReminders(selectedBaby?.id);
       setUserReminders(remindersData || []);
       
-      alert('✓ Vaccine reminders auto-created successfully!');
+      addToast('✓ Vaccine reminders auto-created successfully!', 'success');
     } catch (error) {
       console.error('Error in manual auto-setup:', error);
-      alert('Error creating vaccine reminders. Please try again.');
+      addToast('Error creating vaccine reminders. Please try again.', 'error');
     } finally {
       setLoading(false);
     }
@@ -167,7 +168,7 @@ export default function Vaccines() {
       setUserReminders(allReminders);
 
       // Show success notification
-      if (createdReminders.length > 0 && Notification.permission === 'granted') {
+      if ('Notification' in window && Notification.permission === 'granted') {
         NotificationService.sendNotification(
           'Vaccine Reminders Created! 🎉',
           {
@@ -306,7 +307,7 @@ export default function Vaccines() {
       });
 
       // Send notification when vaccine is completed
-      if (Notification.permission === 'granted') {
+      if ('Notification' in window && Notification.permission === 'granted') {
         NotificationService.sendNotification(
           `✓ ${vaccineToMark.vaccine_name} Completed`,
           {
@@ -358,7 +359,7 @@ export default function Vaccines() {
             setUserReminders(prev => [...prev, newDose]);
 
             // Notify about next dose
-            if (Notification.permission === 'granted') {
+            if ('Notification' in window && Notification.permission === 'granted') {
               NotificationService.sendNotification(
                 `${vaccineToMark.vaccine_name} - Dose ${currentDose + 1} Scheduled`,
                 {

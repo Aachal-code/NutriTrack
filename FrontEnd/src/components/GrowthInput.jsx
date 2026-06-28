@@ -1,26 +1,25 @@
-/**
- * GROWTH INPUT COMPONENT
- * ======================
- * Form for inputting weekly growth measurements
- * Tracks weight, height, and head circumference
- */
-
 import { useState } from 'react';
 import '../styles/GrowthInput.css';
 
-export default function GrowthInput({ babyId, babyDOB, onSubmit, isLoading = false, onCancel }) {
+export default function GrowthInput({ babyId, babyDOB, onSubmit, isLoading = false, onCancel, initialData = null }) {
   const today = new Date().toISOString().split('T')[0];
   const minDate = babyDOB ? new Date(babyDOB).toISOString().split('T')[0] : null;
-  
+
+  const formatDateForInput = (dateStr) => {
+    if (!dateStr) return today;
+    const d = new Date(dateStr);
+    return d.toISOString().split('T')[0];
+  };
+
   const [formData, setFormData] = useState({
-    date: today,
-    weight_kg: '',
-    height_cm: '',
-    head_circumference_cm: '',
-    notes: '',
+    date: initialData ? formatDateForInput(initialData.date) : today,
+    weight_kg: initialData?.weight_kg ?? '',
+    height_cm: initialData?.height_cm ?? '',
+    notes: initialData?.notes || '',
   });
 
   const [errors, setErrors] = useState({});
+  const isEditing = !!initialData;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -77,13 +76,11 @@ export default function GrowthInput({ babyId, babyDOB, onSubmit, isLoading = fal
       return;
     }
 
-    // Create ISO date string at noon UTC to preserve the selected date
     const submitData = {
       baby_id: babyId,
       date: formData.date + 'T12:00:00.000Z',
       weight_kg: parseFloat(formData.weight_kg),
       height_cm: parseFloat(formData.height_cm),
-      head_circumference_cm: formData.head_circumference_cm ? parseFloat(formData.head_circumference_cm) : null,
     };
 
     onSubmit(submitData);
@@ -91,7 +88,7 @@ export default function GrowthInput({ babyId, babyDOB, onSubmit, isLoading = fal
 
   return (
     <form className="growth-input-form" onSubmit={handleSubmit}>
-      <h3 className="form-title">Record Weekly Growth Measurement</h3>
+      <h3 className="form-title">{isEditing ? 'Edit Growth Measurement' : 'Record Weekly Growth Measurement'}</h3>
 
       <div className="form-group">
         <label htmlFor="date" className="form-label">Measurement Date *</label>
@@ -142,20 +139,6 @@ export default function GrowthInput({ babyId, babyDOB, onSubmit, isLoading = fal
           {errors.height_cm && <span className="error-message">{errors.height_cm}</span>}
         </div>
 
-        <div className="form-group">
-          <label htmlFor="head_circumference_cm" className="form-label">Head Circumference (cm)</label>
-          <input
-            type="number"
-            id="head_circumference_cm"
-            name="head_circumference_cm"
-            value={formData.head_circumference_cm}
-            onChange={handleChange}
-            placeholder="e.g., 37"
-            step="0.1"
-            className="form-input"
-            disabled={isLoading}
-          />
-        </div>
       </div>
 
       <div className="form-buttons">
@@ -164,7 +147,7 @@ export default function GrowthInput({ babyId, babyDOB, onSubmit, isLoading = fal
           className="submit-button"
           disabled={isLoading}
         >
-          {isLoading ? 'Saving...' : 'Record Measurement'}
+          {isLoading ? 'Saving...' : (isEditing ? 'Update Measurement' : 'Record Measurement')}
         </button>
         <button
           type="button"

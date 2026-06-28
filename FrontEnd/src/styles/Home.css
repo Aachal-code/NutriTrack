@@ -1,21 +1,4 @@
-/* Home Page Styling - Dark Theme */
-/* ===== CSS VARIABLES ===== */
-:root {
-  --bg-dark: #0f172a;
-  --card-dark: #1c1b21;
-  --card-muted: #22212a;
-  --text-main: #e2e8f0;
-  --text-muted: #9ba4b5;
-  --border: #2b2c37;
-  --border-strong: #3b3d4a;
-  --accent: #7be0d6;
-  --accent-2: #c084fc;
-  --success-green: #22c55e;
-  --warning-yellow: #eab308;
-  --light-green: #86efac;
-  --light-blue: #38bdf8;
-  --white: #ffffff;
-}
+/* Home Page Styling */
 
 /* ===== HOME CONTAINER ===== */
 .home-container {
@@ -608,7 +591,8 @@
   align-items: center;
   padding: 20px;
   border-bottom: 1px solid var(--border-strong);
-  sticky: top;
+  position: sticky;
+  top: 0;
   background: var(--card-dark);
 }
 

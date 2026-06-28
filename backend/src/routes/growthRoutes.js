@@ -19,7 +19,7 @@ router.get('/records', authenticateToken, getGrowthRecords);
 /**
  * POST /growth/records
  * Create a new growth record
- * Body: { age_months, weight_kg, height_cm, head_circumference_cm }
+ * Body: { weight_kg, height_cm }
  */
 router.post('/records', authenticateToken, createGrowthRecord);
 

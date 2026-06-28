@@ -8,3 +8,4 @@ export { default as EmergencyContact } from './EmergencyContact.js';
 export { default as Partner } from './Partner.js';
 export { default as Feeding } from './Feeding.js';
 export { default as Food } from './Food.js';
+export { default as DevelopmentMilestone } from './DevelopmentMilestone.js';

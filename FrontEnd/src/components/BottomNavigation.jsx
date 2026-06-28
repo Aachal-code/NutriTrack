@@ -1,7 +1,7 @@
 /**
  * BOTTOM NAVIGATION COMPONENT
  * ===========================
- * Mobile navigation bar with 5 main sections
+ * Mobile navigation bar with main sections (Profile removed per request)
  * Active state indicated by color
  * Now navigable with routing
  */
@@ -23,7 +23,7 @@ export default function BottomNavigation({ activeTab = "Home", userType: userTyp
       ];
     }
 
-    // new parents keep full set
+    // new parents keep full set minus Profile
     return [
       { id: 1, label: "Home", icon: "🏠", path: "/home" },
       { id: 2, label: "Nutrition", icon: "🍎", path: "/nutrition" },
@@ -36,15 +36,18 @@ export default function BottomNavigation({ activeTab = "Home", userType: userTyp
   return (
     <nav className="bottom-navigation">
       {tabs.map((tab) => (
-        <div 
+        <button 
           key={tab.id} 
+          type="button"
+          role="tab"
+          aria-selected={activeTab === tab.label}
+          aria-label={tab.label}
           className={`nav-item ${activeTab === tab.label ? 'active' : ''}`}
           onClick={() => navigate(tab.path)}
-          style={{ cursor: 'pointer' }}
         >
           <span className="nav-icon">{tab.icon}</span>
           <span className="nav-label">{tab.label}</span>
-        </div>
+        </button>
       ))}
     </nav>
   );

@@ -1,18 +1,4 @@
-/* Profile Page Styling - Dark Theme */
-/* ===== CSS VARIABLES ===== */
-:root {
-  --bg-dark: #0f172a;
-  --card-dark: #1c1b21;
-  --card-muted: #22212a;
-  --text-main: #e2e8f0;
-  --text-muted: #9ba4b5;
-  --border: #2b2c37;
-  --border-strong: #3b3d4a;
-  --accent: #7be0d6;
-  --accent-2: #c084fc;
-  --success-green: #22c55e;
-  --white: #ffffff;
-}
+/* Profile Page Styling */
 
 /* ===== PROFILE CONTAINER ===== */
 .profile-container {
@@ -252,6 +238,55 @@
   font-size: 13px;
   color: var(--text-muted);
   margin: 0;
+}
+
+/* ===== TOGGLE SWITCH ===== */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--card-muted);
+  border: 1px solid var(--border-strong);
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--text-muted);
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(22px);
+  background-color: #fff;
 }
 
 /* ===== LOGOUT BUTTON ===== */

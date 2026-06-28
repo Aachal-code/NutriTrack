@@ -54,18 +54,29 @@ npm install
 
 ### 2. Configure Environment Variables
 
-Copy `.env.example` to `.env` and update with your settings:
+**Windows (Command Prompt):**
+```batch
+copy .env.example .env
+```
 
+**Windows (PowerShell):**
+```powershell
+Copy-Item .env.example .env
+```
+
+**macOS/Linux:**
 ```bash
 cp .env.example .env
 ```
 
-Example `.env`:
+Then edit `.env` with your settings:
 ```
 DATABASE_URL=sqlite://./db.sqlite
-SECRET_KEY=your-secret-key-min-32-chars
+SECRET_KEY=your-secret-key-min-32-chars-for-production
 PORT=8000
 NODE_ENV=development
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=1440
 ```
 
 For MySQL:
@@ -86,6 +97,24 @@ npm start
 ```
 
 The API will be available at `http://localhost:8000`
+
+### 4. For Mobile Development (No ngrok Required!)
+
+The server supports direct local network connections from mobile devices:
+
+```bash
+# Start backend on your computer
+npm start
+
+# On your phone (connected to same WiFi):
+# Use the URL: http://YOUR_COMPUTER_IP:8000
+
+# Get your IP on Windows:
+# ipconfig
+# Look for IPv4 Address (usually 192.168.x.x)
+```
+
+**Note:** The CORS configuration automatically allows requests from local IP addresses (192.168.x.x, 10.x.x.x, etc.) for seamless mobile testing without ngrok.
 
 ## API Endpoints
 

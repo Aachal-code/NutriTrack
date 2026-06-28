@@ -144,6 +144,14 @@ export async function deleteGrowthRecord(recordId) {
   });
 }
 
+export async function updateGrowthRecord(recordId, recordData) {
+  return request(`/api/growth/records/${recordId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(recordData),
+  });
+}
+
 // ===== Babies =====
 export async function getBabies() {
   return request('/api/babies');
@@ -181,6 +189,33 @@ export async function deleteBaby(babyId) {
 
 export async function getBabyGrowthRecords(babyId) {
   return request(`/api/babies/${babyId}/growth`);
+}
+
+// ===== Milestones =====
+export async function getMilestones(babyId) {
+  return request(`/api/milestones/${babyId}`);
+}
+
+export async function createMilestone(milestoneData) {
+  return request('/api/milestones', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(milestoneData),
+  });
+}
+
+export async function updateMilestone(milestoneId, milestoneData) {
+  return request(`/api/milestones/${milestoneId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(milestoneData),
+  });
+}
+
+export async function deleteMilestone(milestoneId) {
+  return request(`/api/milestones/${milestoneId}`, {
+    method: 'DELETE',
+  });
 }
 
 // ===== Reminders =====

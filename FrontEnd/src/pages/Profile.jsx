@@ -15,6 +15,8 @@ import {
   sendPartnerInvite,
   clearAuthToken
 } from '../api';
+import { useToast } from '../context/ToastContext';
+import { useTheme } from '../context/ThemeContext';
 import '../styles/Profile.css';
 
 export default function Profile() {
@@ -24,6 +26,8 @@ export default function Profile() {
   const [showEmergencyModal, setShowEmergencyModal] = useState(false);
   const [showLegalModal, setShowLegalModal] = useState(false);
   const [showPartnerModal, setShowPartnerModal] = useState(false);
+  const { addToast } = useToast();
+  const { darkMode, toggleDarkMode } = useTheme();
   
   // User data - fetch from API
   const [userData, setUserData] = useState({
@@ -81,11 +85,11 @@ export default function Profile() {
   const handleEmergencyContactSave = async () => {
     try {
       await saveEmergencyContact(emergencyContact);
-      console.log('Emergency contact saved:', emergencyContact);
       setShowEmergencyModal(false);
+      addToast('Emergency contact saved successfully!', 'success');
     } catch (error) {
       console.error('Error saving emergency contact:', error);
-      alert('Failed to save emergency contact');
+      addToast('Failed to save emergency contact', 'error');
     }
   };
 
@@ -93,13 +97,12 @@ export default function Profile() {
   const handlePartnerSync = async () => {
     try {
       await sendPartnerInvite(partnerEmail);
-      console.log('Partner invite sent to:', partnerEmail);
       setShowPartnerModal(false);
       setPartnerEmail("");
-      alert('Partner invite sent successfully!');
+      addToast('Partner invite sent successfully!', 'success');
     } catch (error) {
       console.error('Error sending partner invite:', error);
-      alert('Failed to send partner invite');
+      addToast('Failed to send partner invite', 'error');
     }
   };
 
@@ -147,19 +150,35 @@ export default function Profile() {
           
           
           {/* Dark Mode Toggle */}
-          <div className="settings-item">
+          <div 
+            className="settings-item" 
+            onClick={toggleDarkMode}
+            role="switch"
+            aria-checked={darkMode}
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDarkMode(); } }}
+          >
             <div className="settings-item-left">
-              <span className="settings-icon">🔔</span>
+              <span className="settings-icon">{darkMode ? '🌙' : '☀️'}</span>
               <div className="settings-info">
-                <p className="settings-label">Notifications</p>
-                <p className="settings-description">Manage notification preferences</p>
+                <p className="settings-label">Dark Mode</p>
+                <p className="settings-description">Toggle application theme</p>
               </div>
             </div>
-            <span className="chevron">›</span>
+            <div className="toggle-switch">
+              <input type="checkbox" checked={darkMode} readOnly />
+              <span className="toggle-slider"></span>
+            </div>
           </div>
 
           {/* Sync Partner */}
-          <div className="settings-item" onClick={() => setShowPartnerModal(true)}>
+          <div 
+            className="settings-item" 
+            onClick={() => setShowPartnerModal(true)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowPartnerModal(true); }}
+          >
             <div className="settings-item-left">
               <span className="settings-icon">👥</span>
               <div className="settings-info">
@@ -171,7 +190,13 @@ export default function Profile() {
           </div>
 
           {/* Emergency Contact */}
-          <div className="settings-item" onClick={() => setShowEmergencyModal(true)}>
+          <div 
+            className="settings-item" 
+            onClick={() => setShowEmergencyModal(true)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowEmergencyModal(true); }}
+          >
             <div className="settings-item-left">
               <span className="settings-icon">🚨</span>
               <div className="settings-info">
@@ -183,7 +208,13 @@ export default function Profile() {
           </div>
 
           {/* Legal Notice */}
-          <div className="settings-item" onClick={() => setShowLegalModal(true)}>
+          <div 
+            className="settings-item" 
+            onClick={() => setShowLegalModal(true)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowLegalModal(true); }}
+          >
             <div className="settings-item-left">
               <span className="settings-icon">📜</span>
               <div className="settings-info">
@@ -341,7 +372,7 @@ export default function Profile() {
       )}
 
       {/* Bottom Navigation */}
-      <BottomNavigation activeTab="Home" />
+      <BottomNavigation activeTab="Profile" />
     </div>
   );
 }

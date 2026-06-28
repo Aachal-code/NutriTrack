@@ -37,9 +37,6 @@ const GrowthRecord = sequelize.define('GrowthRecord', {
   height_cm: {
     type: DataTypes.FLOAT,
   },
-  head_circumference_cm: {
-    type: DataTypes.FLOAT,
-  },
 }, {
   tableName: 'growth_records',
   timestamps: false,

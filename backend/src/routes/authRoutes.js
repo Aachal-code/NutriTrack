@@ -1,6 +1,7 @@
 import express from 'express';
 import { register, login, getCurrentUser } from '../controllers/authController.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { loginRateLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ router.post('/register', register);
  * Login user and get JWT token
  * Body: { email, password }
  */
-router.post('/login', login);
+router.post('/login', loginRateLimiter, login);
 
 /**
  * GET /auth/me

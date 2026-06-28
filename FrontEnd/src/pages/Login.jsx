@@ -13,7 +13,7 @@
  * - SubmitButton: Reusable submit button component
  */
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from '../hooks/useForm';
 import FormInput from '../components/FormInput';
 import ErrorMessage from '../components/ErrorMessage';
@@ -31,13 +31,6 @@ export default function Login() {
   });
   const navigate = useNavigate();
 
-  // ===== CLEAR FIELDS ON FOCUS =====
-  const handleFieldFocus = (fieldName) => {
-    // Clear the field when user focuses on it
-    handleInputChange({
-      target: { name: fieldName, value: '' }
-    });
-  };
 
   // ===== FORM SUBMISSION HANDLER =====
   const handleSubmit = async (e) => {
@@ -107,7 +100,6 @@ export default function Login() {
             placeholder="example: user@email.com"
             value={formData.email}
             onChange={handleInputChange}
-            onFocus={() => handleFieldFocus('email')}
           />
 
           {/* Password Input */}
@@ -116,19 +108,18 @@ export default function Login() {
             id="password"
             type="password"
             name="password"
-            placeholder="example: Password@123"
+            placeholder="Enter your password"
             value={formData.password}
             onChange={handleInputChange}
-            onFocus={() => handleFieldFocus('password')}
           />
 
           {/* Error Display */}
           <ErrorMessage message={error} />
 
           {/* Forgot Password Link */}
-          <a href="/forgot-password" className="forgot-password-link">
+          <Link to="/forgot-password" className="forgot-password-link">
             Forgot password?
-          </a>
+          </Link>
 
           {/* Submit Button */}
           <SubmitButton isLoading={isLoading} defaultText="Sign In" />

@@ -39,6 +39,8 @@ import StageSelect from './pages/StageSelect'
 import PregnantHome from './pages/PregnantHome'
 import PregnantNutrition from './pages/PregnantNutrition'
 import PregnantVaccines from './pages/PregnantVaccines'
+import ProtectedRoute from './components/ProtectedRoute'
+import ErrorBoundary from './components/ErrorBoundary'
 import './App.css'
 
 /**
@@ -48,73 +50,45 @@ import './App.css'
  */
 function App() {
   return (
-    <BabyProvider>
-      {/* Router: Enables all React Router functionality */}
-      <Router>
-        {/* Routes: Container for all route definitions */}
-        <Routes>
-          {/* Route 0: Onboarding - First time user experience */}
-          <Route path="/onboarding" element={<Onboarding />} />
+    <ErrorBoundary>
+      <BabyProvider>
+        {/* Router: Enables all React Router functionality */}
+        <Router>
+          {/* Routes: Container for all route definitions */}
+          <Routes>
+            {/* Route 0: Onboarding - First time user experience */}
+            <Route path="/onboarding" element={<Onboarding />} />
 
-          {/* Route 1: Welcome / Stage selection */}
-          <Route path="/welcome" element={<StageSelect />} />
+            {/* Route 1: Welcome / Stage selection */}
+            <Route path="/welcome" element={<StageSelect />} />
+            
+            {/* Route 2: Login Page */}
+            <Route path="/login" element={<Login />} />
+            
+            {/* Route 3: Signup Page */}
+            <Route path="/signup" element={<Signup />} />
 
-          {/* Route 1: Home Page (Dashboard) - New Parent */}
-          {/* Path: /home → Shows <Home /> component */}
-          <Route path="/home" element={<Home />} />
+            {/* Protected Routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/home" element={<Home />} />
+              <Route path="/add-baby" element={<AddBaby />} />
+              <Route path="/pregnant/home" element={<PregnantHome />} />
+              <Route path="/nutrition" element={<Nutrition />} />
+              <Route path="/pregnant/nutrition" element={<PregnantNutrition />} />
+              <Route path="/vaccines" element={<Vaccines />} />
+              <Route path="/pregnant/vaccines" element={<PregnantVaccines />} />
+              <Route path="/feeding" element={<Feeding />} />
+              <Route path="/growth" element={<Growth />} />
+              <Route path="/profile" element={<Profile />} />
+            </Route>
 
-          {/* Route 1a: Add Baby Page - For adding new babies */}
-          {/* Path: /add-baby → Shows <AddBaby /> component */}
-          <Route path="/add-baby" element={<AddBaby />} />
-
-          {/* Route 1b: Pregnant Home Page (Dashboard) - Pregnant Users */}
-          {/* Path: /pregnant/home → Shows <PregnantHome /> component */}
-          <Route path="/pregnant/home" element={<PregnantHome />} />
-          
-          {/* Route 2: Login Page */}
-          {/* Path: /login → Shows <Login /> component */}
-          <Route path="/login" element={<Login />} />
-          
-          {/* Route 3: Signup Page */}
-          {/* Path: /signup → Shows <Signup /> component */}
-          <Route path="/signup" element={<Signup />} />
-
-          {/* Route 4: Nutrition Page - New Parent */}
-          {/* Path: /nutrition → Shows <Nutrition /> component */}
-          <Route path="/nutrition" element={<Nutrition />} />
-
-          {/* Route 4b: Pregnant Nutrition Page */}
-          {/* Path: /pregnant/nutrition → Shows <PregnantNutrition /> component */}
-          <Route path="/pregnant/nutrition" element={<PregnantNutrition />} />
-
-          {/* Route 5: Vaccines Page - New Parent */}
-          {/* Path: /vaccines → Shows <Vaccines /> component */}
-          <Route path="/vaccines" element={<Vaccines />} />
-
-          {/* Route 5b: Pregnant Vaccines/Health Page */}
-          {/* Path: /pregnant/vaccines → Shows <PregnantVaccines /> component */}
-          <Route path="/pregnant/vaccines" element={<PregnantVaccines />} />
-
-          {/* Route 6: Feeding Page */}
-          {/* Path: /feeding → Shows <Feeding /> component */}
-          <Route path="/feeding" element={<Feeding />} />
-
-          {/* Route 7: Growth Page */}
-          {/* Path: /growth → Shows <Growth /> component */}
-          <Route path="/growth" element={<Growth />} />
-
-          {/* Route 9: Profile Page */}
-          {/* Path: /profile → Shows <Profile /> component */}
-          <Route path="/profile" element={<Profile />} />
-          
-          {/* Route 10: Root Path Redirect */}
-          {/* Path: / (any other path) → Redirect to /onboarding */}
-          {/* replace: replaces history entry so user can't go back to "/" */}
-          <Route path="/" element={<Navigate to="/onboarding" replace />} />
-          <Route path="*" element={<Navigate to="/onboarding" replace />} />
-        </Routes>
-      </Router>
-    </BabyProvider>
+            {/* Route 10: Root Path Redirect */}
+            <Route path="/" element={<Navigate to="/onboarding" replace />} />
+            <Route path="*" element={<Navigate to="/onboarding" replace />} />
+          </Routes>
+        </Router>
+      </BabyProvider>
+    </ErrorBoundary>
   )
 }
 

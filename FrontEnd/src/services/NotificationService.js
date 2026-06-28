@@ -172,10 +172,9 @@ export class NotificationService {
       return false;
     }
 
-    // Only request if not already granted or denied
-    if (Notification.permission === 'default') {
-      await this.requestPermission();
-    }
+    // Note: We do not automatically request permission here because browsers
+    // may block or hang requests that do not originate from a user gesture.
+    // The NotificationBanner handles requesting permission on user click.
 
     return Notification.permission === 'granted';
   }

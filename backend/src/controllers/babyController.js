@@ -1,4 +1,7 @@
-import { Baby, GrowthRecord } from '../models/index.js';
+import { Baby, GrowthRecord, Reminder, DevelopmentMilestone } from '../models/index.js';
+import { analyzeGrowth } from '../utils/whoStandards.js';
+import { calculateTrend } from '../utils/whoStandards.js';
+import { seedMilestonesForBaby } from '../db/milestoneSeeds.js';
 
 /**
  * Get all babies for the current user
@@ -58,7 +61,6 @@ export const createBaby = async (req, res, next) => {
       gender,
       weight_at_birth_kg,
       height_at_birth_cm,
-      head_circumference_at_birth_cm,
       blood_type,
       allergies,
       notes,
@@ -76,11 +78,14 @@ export const createBaby = async (req, res, next) => {
       gender,
       weight_at_birth_kg,
       height_at_birth_cm,
-      head_circumference_at_birth_cm,
       blood_type,
       allergies,
       notes,
       is_active: true,
+    });
+
+    await seedMilestonesForBaby(newBaby.id).catch(err => {
+      console.warn('Milestone seeding skipped:', err.message);
     });
 
     return res.status(201).json(newBaby);
@@ -136,6 +141,8 @@ export const deleteBaby = async (req, res, next) => {
     // Hard delete - permanently remove from database
     // First delete all related records
     await GrowthRecord.destroy({ where: { baby_id: babyId } });
+    await DevelopmentMilestone.destroy({ where: { baby_id: babyId } });
+    await Reminder.destroy({ where: { baby_id: babyId } });
     
     // Then delete the baby
     await baby.destroy();
@@ -169,10 +176,21 @@ export const getBabyGrowthRecords = async (req, res, next) => {
       order: [['date', 'DESC']],
     });
 
+    const recordsWithWho = growthRecords.map(record => {
+      const who_analysis = analyzeGrowth(record, baby);
+      return { ...record.toJSON(), who_analysis };
+    });
+
+    let trend_analysis = null;
+    if (recordsWithWho.length >= 2) {
+      trend_analysis = calculateTrend(recordsWithWho[0], recordsWithWho[1]);
+    }
+
     return res.json({
       baby,
-      growth_records: growthRecords,
-      total_records: growthRecords.length,
+      growth_records: recordsWithWho,
+      total_records: recordsWithWho.length,
+      trend_analysis,
     });
   } catch (error) {
     console.error(`Error fetching baby growth records: ${error.message}`);

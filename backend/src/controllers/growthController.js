@@ -1,8 +1,7 @@
-import { GrowthRecord } from '../models/index.js';
+import { GrowthRecord, Baby } from '../models/index.js';
+import { validateGrowthRecord, calculateAgeMonths } from '../utils/growthValidation.js';
+import { analyzeGrowth } from '../utils/whoStandards.js';
 
-/**
- * Get all growth records for the current user
- */
 export const getGrowthRecords = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -19,33 +18,42 @@ export const getGrowthRecords = async (req, res, next) => {
   }
 };
 
-/**
- * Create a new growth record
- */
 export const createGrowthRecord = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const { baby_id, age_months, weight_kg, height_cm, head_circumference_cm } = req.body;
+    const { baby_id, weight_kg, height_cm, date } = req.body;
+
+    const baby = await Baby.findOne({ where: { id: baby_id, user_id: userId } });
+    if (!baby) {
+      return res.status(404).json({ detail: 'Baby not found' });
+    }
+
+    const errors = validateGrowthRecord(baby, { date, weight_kg, height_cm });
+    if (errors.length > 0) {
+      return res.status(400).json({ detail: errors[0], errors });
+    }
+
+    const measurementDate = date || new Date().toISOString();
+    const ageMonths = calculateAgeMonths(baby.date_of_birth, measurementDate);
 
     const newRecord = await GrowthRecord.create({
       user_id: userId,
       baby_id,
-      age_months,
-      weight_kg,
-      height_cm,
-      head_circumference_cm,
+      age_months: Math.round(ageMonths),
+      weight_kg: parseFloat(weight_kg),
+      height_cm: parseFloat(height_cm),
+      date: measurementDate,
     });
 
-    return res.status(201).json(newRecord);
+    const who_analysis = analyzeGrowth(newRecord, baby);
+
+    return res.status(201).json({ ...newRecord.toJSON(), who_analysis });
   } catch (error) {
     console.error(`Error creating growth record: ${error.message}`);
     return res.status(500).json({ detail: 'Error creating growth record' });
   }
 };
 
-/**
- * Get a specific growth record
- */
 export const getGrowthRecord = async (req, res, next) => {
   try {
     const { recordId } = req.params;
@@ -66,14 +74,11 @@ export const getGrowthRecord = async (req, res, next) => {
   }
 };
 
-/**
- * Update a growth record
- */
 export const updateGrowthRecord = async (req, res, next) => {
   try {
     const { recordId } = req.params;
     const userId = req.user.id;
-    const { baby_id, age_months, weight_kg, height_cm, head_circumference_cm } = req.body;
+    const { weight_kg, height_cm, date } = req.body;
 
     const record = await GrowthRecord.findOne({
       where: { id: recordId, user_id: userId },
@@ -83,24 +88,38 @@ export const updateGrowthRecord = async (req, res, next) => {
       return res.status(404).json({ detail: 'Record not found' });
     }
 
-    await record.update({
-      baby_id,
-      age_months,
-      weight_kg,
-      height_cm,
-      head_circumference_cm,
-    });
+    const baby = await Baby.findOne({ where: { id: record.baby_id, user_id: userId } });
 
-    return res.json(record);
+    const errors = validateGrowthRecord(baby || record, {
+      date: date || record.date,
+      weight_kg: weight_kg ?? record.weight_kg,
+      height_cm: height_cm ?? record.height_cm,
+    });
+    if (errors.length > 0) {
+      return res.status(400).json({ detail: errors[0], errors });
+    }
+
+    const updateData = {};
+    const measurementDate = date || record.date;
+
+    if (baby) {
+      updateData.age_months = Math.round(calculateAgeMonths(baby.date_of_birth, measurementDate));
+    }
+    if (weight_kg !== undefined) updateData.weight_kg = parseFloat(weight_kg);
+    if (height_cm !== undefined) updateData.height_cm = parseFloat(height_cm);
+    if (date !== undefined) updateData.date = date;
+
+    await record.update(updateData);
+
+    const who_analysis = analyzeGrowth(record, baby);
+
+    return res.json({ ...record.toJSON(), who_analysis });
   } catch (error) {
     console.error(`Error updating growth record: ${error.message}`);
     return res.status(500).json({ detail: 'Error updating growth record' });
   }
 };
 
-/**
- * Delete a growth record
- */
 export const deleteGrowthRecord = async (req, res, next) => {
   try {
     const { recordId } = req.params;

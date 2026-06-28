@@ -26,7 +26,9 @@ export default function FormInput({
   onChange,
   onFocus,
   disabled = false,
-  required = false
+  required = false,
+  error = false,
+  'aria-describedby': ariaDescribedBy
 }) {
   return (
     <div className="form-input-wrapper">
@@ -46,7 +48,9 @@ export default function FormInput({
         onFocus={onFocus}
         disabled={disabled}
         required={required}
-        className="form-input-field"
+        aria-invalid={error ? "true" : "false"}
+        aria-describedby={ariaDescribedBy}
+        className={`form-input-field ${error ? 'input-error' : ''}`}
       />
     </div>
   );

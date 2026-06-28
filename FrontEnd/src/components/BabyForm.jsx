@@ -15,7 +15,6 @@ export default function BabyForm({ onSubmit, isLoading = false, initialData = nu
     gender: initialData?.gender || 'male',
     weight_at_birth_kg: initialData?.weight_at_birth_kg || '',
     height_at_birth_cm: initialData?.height_at_birth_cm || '',
-    head_circumference_at_birth_cm: initialData?.head_circumference_at_birth_cm || '',
     blood_type: initialData?.blood_type || '',
     allergies: initialData?.allergies || '',
     notes: initialData?.notes || '',
@@ -74,7 +73,6 @@ export default function BabyForm({ onSubmit, isLoading = false, initialData = nu
       ...formData,
       weight_at_birth_kg: formData.weight_at_birth_kg ? parseFloat(formData.weight_at_birth_kg) : null,
       height_at_birth_cm: formData.height_at_birth_cm ? parseFloat(formData.height_at_birth_cm) : null,
-      head_circumference_at_birth_cm: formData.head_circumference_at_birth_cm ? parseFloat(formData.head_circumference_at_birth_cm) : null,
     };
 
     onSubmit(submitData);
@@ -160,21 +158,6 @@ export default function BabyForm({ onSubmit, isLoading = false, initialData = nu
             value={formData.height_at_birth_cm}
             onChange={handleChange}
             placeholder="e.g., 50"
-            step="0.1"
-            className="form-input"
-            disabled={isLoading}
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="head_circumference_at_birth_cm" className="form-label">Head Circumference at Birth (cm)</label>
-          <input
-            type="number"
-            id="head_circumference_at_birth_cm"
-            name="head_circumference_at_birth_cm"
-            value={formData.head_circumference_at_birth_cm}
-            onChange={handleChange}
-            placeholder="e.g., 35"
             step="0.1"
             className="form-input"
             disabled={isLoading}

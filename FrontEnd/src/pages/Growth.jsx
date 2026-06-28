@@ -1,30 +1,37 @@
-/**
- * GROWTH PAGE COMPONENT
- * ====================
- * Displays growth tracking with babies and milestones
- * Allows adding babies and recording weekly growth measurements
- * Shows growth charts and developmental milestones
- */
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GrowthHeader from '../components/GrowthHeader';
 import MilestoneCard from '../components/MilestoneCard';
 import BabyCard from '../components/BabyCard';
 import BabyForm from '../components/BabyForm';
 import GrowthInput from '../components/GrowthInput';
+import LoadingSpinner from '../components/LoadingSpinner';
 import BottomNavigation from '../components/BottomNavigation';
+import { useToast } from '../context/ToastContext';
 import { useBabyContext } from '../context/BabyContext';
 import { calculateBabyAgeDetailed } from '../utils/babyAge';
-import { 
-  createBaby, 
+import { buildChartPoints, buildChartValues, buildLinePath, metricConfig } from '../utils/growthChart';
+import {
+  createBaby,
   updateBaby,
   deleteBaby,
   getBabyGrowthRecords,
   createGrowthRecord,
-  deleteGrowthRecord 
+  deleteGrowthRecord,
+  updateGrowthRecord,
+  getMilestones,
+  updateMilestone,
 } from '../api';
 import '../styles/Growth.css';
+
+const DEFAULT_MILESTONES = [
+  { key: 'first_smile', name: 'First smile', emoji: '😊', ageMonths: 2 },
+  { key: 'holds_head_up', name: 'Holds head up', emoji: '💪', ageMonths: 3 },
+  { key: 'rolls_over', name: 'Rolls over', emoji: '🔄', ageMonths: 4 },
+  { key: 'sits_up', name: 'Sits up', emoji: '🪑', ageMonths: 6 },
+  { key: 'crawls', name: 'Crawls', emoji: '🍃', ageMonths: 8 },
+  { key: 'stands', name: 'Stands with support', emoji: '🧍', ageMonths: 10 },
+];
 
 export default function Growth() {
   const navigate = useNavigate();
@@ -35,32 +42,61 @@ export default function Growth() {
   const [showBabyForm, setShowBabyForm] = useState(false);
   const [showGrowthInput, setShowGrowthInput] = useState(false);
   const [editingBaby, setEditingBaby] = useState(null);
+  const [editingRecord, setEditingRecord] = useState(null);
   const [babyFormLoading, setBabyFormLoading] = useState(false);
   const [growthInputLoading, setGrowthInputLoading] = useState(false);
-  
-  // Fetch babies on mount
-  useEffect(() => {
-    const fetchBabies = async () => {
-      try {
-        if (selectedBaby) {
-          fetchGrowthRecords(selectedBaby.id);
-        }
-      } catch (error) {
-        console.error('Error fetching babies:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const [milestones, setMilestones] = useState([]);
+  const [milestonesLoading, setMilestonesLoading] = useState(false);
+  const [trendAnalysis, setTrendAnalysis] = useState(null);
+  const [chartMetric, setChartMetric] = useState('weight');
+  const [chartValues, setChartValues] = useState([]);
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const recordsEndRef = useRef(null);
+  const { addToast } = useToast();
 
-    fetchBabies();
+  useEffect(() => {
+    setLoading(true);
+    if (selectedBaby) {
+      fetchGrowthRecords(selectedBaby.id);
+      fetchMilestones(selectedBaby.id);
+    } else {
+      setGrowthRecords([]);
+      setMilestones([]);
+      setChartValues([]);
+      setTrendAnalysis(null);
+      setLoading(false);
+    }
   }, [selectedBaby]);
+
+  useEffect(() => {
+    if (selectedBaby) {
+      const points = buildChartPoints(selectedBaby, growthRecords);
+      const values = buildChartValues(points, metricConfig[chartMetric].key);
+      setChartValues(values);
+    }
+  }, [selectedBaby, growthRecords, chartMetric]);
 
   const fetchGrowthRecords = async (babyId) => {
     try {
       const data = await getBabyGrowthRecords(babyId);
       setGrowthRecords(data.growth_records || []);
+      setTrendAnalysis(data.trend_analysis || null);
     } catch (error) {
       console.error('Error fetching growth records:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMilestones = async (babyId) => {
+    setMilestonesLoading(true);
+    try {
+      const data = await getMilestones(babyId);
+      setMilestones(data || []);
+    } catch (error) {
+      console.error('Error fetching milestones:', error);
+    } finally {
+      setMilestonesLoading(false);
     }
   };
 
@@ -73,10 +109,11 @@ export default function Growth() {
       setShowBabyForm(false);
       setEditingBaby(null);
       fetchGrowthRecords(newBaby.id);
-      alert('Baby added successfully!');
+      fetchMilestones(newBaby.id);
+      addToast('Baby added successfully!', 'success');
     } catch (error) {
       console.error('Error adding baby:', error);
-      alert('Failed to add baby: ' + error.message);
+      addToast('Failed to add baby: ' + error.message, 'error');
     } finally {
       setBabyFormLoading(false);
     }
@@ -90,10 +127,10 @@ export default function Growth() {
       setSelectedBaby(updatedBaby);
       setShowBabyForm(false);
       setEditingBaby(null);
-      alert('Baby updated successfully!');
+      addToast('Baby updated successfully!', 'success');
     } catch (error) {
       console.error('Error updating baby:', error);
-      alert('Failed to update baby: ' + error.message);
+      addToast('Failed to update baby: ' + error.message, 'error');
     } finally {
       setBabyFormLoading(false);
     }
@@ -105,7 +142,7 @@ export default function Growth() {
         await deleteBaby(babyId);
         const updatedBabies = babies.filter(b => b.id !== babyId);
         setBabies(updatedBabies);
-        
+
         if (selectedBaby?.id === babyId) {
           if (updatedBabies.length > 0) {
             setSelectedBaby(updatedBabies[0]);
@@ -115,10 +152,10 @@ export default function Growth() {
             setGrowthRecords([]);
           }
         }
-        alert('Baby record deleted successfully!');
+        addToast('Baby record deleted successfully!', 'success');
       } catch (error) {
         console.error('Error deleting baby:', error);
-        alert('Failed to delete baby: ' + error.message);
+        addToast('Failed to delete baby: ' + error.message, 'error');
       }
     }
   };
@@ -136,10 +173,36 @@ export default function Growth() {
       if (selectedBaby) {
         fetchGrowthRecords(selectedBaby.id);
       }
-      alert('Growth record added successfully!');
+      addToast('Growth record added successfully!', 'success');
+      setTimeout(() => recordsEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
     } catch (error) {
       console.error('Error adding growth record:', error);
-      alert('Failed to add growth record: ' + error.message);
+      addToast('Failed to add growth record: ' + error.message, 'error');
+    } finally {
+      setGrowthInputLoading(false);
+    }
+  };
+
+  const handleEditGrowthRecord = (record) => {
+    setEditingRecord(record);
+    setShowGrowthInput(true);
+  };
+
+  const handleUpdateGrowthRecord = async (recordData) => {
+    if (!editingRecord) return;
+    setGrowthInputLoading(true);
+    try {
+      await updateGrowthRecord(editingRecord.id, recordData);
+      setShowGrowthInput(false);
+      setEditingRecord(null);
+      if (selectedBaby) {
+        fetchGrowthRecords(selectedBaby.id);
+      }
+      addToast('Growth record updated successfully!', 'success');
+      setTimeout(() => recordsEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+    } catch (error) {
+      console.error('Error updating growth record:', error);
+      addToast('Failed to update growth record: ' + error.message, 'error');
     } finally {
       setGrowthInputLoading(false);
     }
@@ -150,145 +213,111 @@ export default function Growth() {
       try {
         await deleteGrowthRecord(recordId);
         setGrowthRecords(growthRecords.filter(r => r.id !== recordId));
-        alert('Growth record deleted successfully!');
+        addToast('Growth record deleted successfully!', 'success');
       } catch (error) {
         console.error('Error deleting growth record:', error);
-        alert('Failed to delete growth record: ' + error.message);
+        addToast('Failed to delete growth record: ' + error.message, 'error');
       }
     }
+  };
+
+  const handleCancelGrowthInput = () => {
+    setShowGrowthInput(false);
+    setEditingRecord(null);
   };
 
   const _calculateAge = (dob) => {
     return calculateBabyAgeDetailed(dob).label;
   };
 
-  const [milestones, setMilestones] = useState([
-    {
-      id: 1,
-      name: "First smile",
-      emoji: "😊",
-      ageInMonths: 2,
-      completed: true
-    },
-    {
-      id: 2,
-      name: "Holds head up",
-      emoji: "💪",
-      ageInMonths: 3,
-      completed: true
-    },
-    {
-      id: 3,
-      name: "Rolls over",
-      emoji: "🔄",
-      ageInMonths: 4,
-      completed: true
-    },
-    {
-      id: 4,
-      name: "Sits up",
-      emoji: "🪑",
-      ageInMonths: 6,
-      completed: false
-    },
-    {
-      id: 5,
-      name: "Crawls",
-      emoji: "🍃",
-      ageInMonths: 8,
-      completed: false
+  const toggleMilestone = async (milestoneId, currentCompleted) => {
+    try {
+      const newCompleted = !currentCompleted;
+      const completedDate = newCompleted ? new Date().toISOString().split('T')[0] : null;
+      await updateMilestone(milestoneId, { completed: newCompleted, completed_date: completedDate });
+      setMilestones(milestones.map(m =>
+        m.id === milestoneId ? { ...m, completed: newCompleted, completed_date: completedDate } : m
+      ));
+      addToast(newCompleted ? 'Milestone completed!' : 'Milestone unmarked', 'success');
+    } catch (error) {
+      console.error('Error updating milestone:', error);
+      addToast('Failed to update milestone', 'error');
     }
-  ]);
-
-  const toggleMilestone = (id) => {
-    setMilestones(milestones.map(m =>
-      m.id === id ? { ...m, completed: !m.completed } : m
-    ));
   };
 
-  const [chartMetric, setChartMetric] = useState('weight');
-
-  // Calculate growth chart data - include birth measurements as first point
-  const chartPoints = (() => {
-    const points = [];
-    
-    // Add birth measurements as the first data point if baby exists
-    if (selectedBaby && selectedBaby.date_of_birth) {
-      points.push({
-        date: new Date(selectedBaby.date_of_birth).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        weight: selectedBaby.weight_at_birth_kg,
-        height: selectedBaby.height_at_birth_cm,
-        head: selectedBaby.head_circumference_at_birth_cm,
-      });
+  const handleEditMilestoneNotes = async (milestoneId, notes) => {
+    try {
+      await updateMilestone(milestoneId, { notes });
+      setMilestones(milestones.map(m => m.id === milestoneId ? { ...m, notes } : m));
+    } catch (error) {
+      console.error('Error updating milestone notes:', error);
     }
-    
-    // Add all growth records
-    const recordPoints = growthRecords
-      .slice()
-      .reverse()
-      .map((record) => ({
-        date: new Date(record.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        weight: record.weight_kg,
-        height: record.height_cm,
-        head: record.head_circumference_cm,
-      }));
-    
-    return [...points, ...recordPoints];
-  })();
+  };
 
-  const metricConfig = {
-    weight: { label: 'Weight', unit: 'kg', icon: '⚖️' },
-    height: { label: 'Height', unit: 'cm', icon: '📏' },
-    head: { label: 'Head Circumference', unit: 'cm', icon: '🧠' },
+  const handleEditMilestoneDate = async (milestoneId, completedDate) => {
+    try {
+      await updateMilestone(milestoneId, { completed: true, completed_date: completedDate });
+      setMilestones(milestones.map(m => m.id === milestoneId ? { ...m, completed_date: completedDate } : m));
+    } catch (error) {
+      console.error('Error updating milestone date:', error);
+    }
   };
 
   const metric = metricConfig[chartMetric];
-  const chartValues = chartPoints
-    .map(point => ({ ...point, value: point[chartMetric] }))
-    .filter(point => point.value !== null && point.value !== undefined);
-
   const chartMin = chartValues.length > 0 ? Math.min(...chartValues.map(p => p.value)) : 0;
   const chartMax = chartValues.length > 0 ? Math.max(...chartValues.map(p => p.value)) : 0;
   const chartRange = chartMax - chartMin || 1;
 
-  const buildLinePath = () => {
-    if (chartValues.length === 0) return '';
-    const width = 300;
-    const height = 140;
-    const padding = 12;
-    const stepX = (width - padding * 2) / Math.max(chartValues.length - 1, 1);
-    return chartValues
-      .map((point, index) => {
-        const x = padding + index * stepX;
-        const y = height - padding - ((point.value - chartMin) / chartRange) * (height - padding * 2);
-        return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
-      })
-      .join(' ');
+  const getLatestWho = (record) => {
+    if (!record?.who_analysis) return null;
+    return record.who_analysis;
   };
 
+  const latestRecord = growthRecords.length > 0 ? growthRecords[0] : null;
+  const latestWho = latestRecord ? getLatestWho(latestRecord) : null;
+
   if (loading) {
-    return <div className="growth-container"><p>Loading...</p></div>;
+    return (
+      <div className="growth-container">
+        <GrowthHeader onBack={() => navigate('/home')} />
+        <div className="growth-main">
+          <div className="growth-skeleton">
+            <div className="growth-skeleton-line wide" />
+            <div className="growth-skeleton-line medium" />
+            <div className="growth-skeleton-line" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="growth-container">
-      {/* Growth Header */}
-      <GrowthHeader 
+      <GrowthHeader
         onBack={() => navigate('/home')}
       />
 
-      {/* Main Content */}
       <div className="growth-main">
-        
-        {/* Tab Selection */}
+
         <div className="growth-tabs">
-          <button 
+          <button
             className={`growth-tab-btn ${activeTab === 'babies' ? 'active' : ''}`}
             onClick={() => setActiveTab('babies')}
           >
             👶 Babies
           </button>
-          <button 
+          {selectedBaby && (
+            <button
+              className={`growth-tab-btn ${activeTab === 'tracking' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('tracking');
+                fetchGrowthRecords(selectedBaby.id);
+              }}
+            >
+              📈 Tracking
+            </button>
+          )}
+          <button
             className={`growth-tab-btn ${activeTab === 'milestones' ? 'active' : ''}`}
             onClick={() => setActiveTab('milestones')}
             disabled={!selectedBaby}
@@ -297,12 +326,11 @@ export default function Growth() {
           </button>
         </div>
 
-        {/* Babies Tab */}
         {activeTab === 'babies' && (
           <div className="babies-section">
             <div className="section-header">
               <h2>Your Babies</h2>
-              <button 
+              <button
                 className="add-button"
                 onClick={() => navigate('/add-baby')}
               >
@@ -311,7 +339,7 @@ export default function Growth() {
             </div>
 
             {showBabyForm && (
-              <BabyForm 
+              <BabyForm
                 onSubmit={editingBaby ? handleUpdateBaby : handleAddBaby}
                 isLoading={babyFormLoading}
                 initialData={editingBaby}
@@ -326,7 +354,7 @@ export default function Growth() {
             ) : (
               <div className="babies-list">
                 {babies.map(baby => (
-                  <BabyCard 
+                  <BabyCard
                     key={baby.id}
                     baby={baby}
                     onEdit={handleEditBaby}
@@ -344,30 +372,32 @@ export default function Growth() {
           </div>
         )}
 
-        {/* Growth Tracking Tab */}
         {activeTab === 'tracking' && selectedBaby && (
           <div className="tracking-section">
             <div className="section-header">
               <h2>📈 Growth Tracking: {selectedBaby.name}</h2>
-              <button 
+              <button
                 className="add-button"
-                onClick={() => setShowGrowthInput(!showGrowthInput)}
+                onClick={() => {
+                  setEditingRecord(null);
+                  setShowGrowthInput(!showGrowthInput);
+                }}
               >
                 {showGrowthInput ? '✕ Cancel' : '+ Record Measurement'}
               </button>
             </div>
 
             {showGrowthInput && (
-              <GrowthInput 
+              <GrowthInput
                 babyId={selectedBaby.id}
                 babyDOB={selectedBaby.date_of_birth}
-                onSubmit={handleAddGrowthRecord}
+                onSubmit={editingRecord ? handleUpdateGrowthRecord : handleAddGrowthRecord}
                 isLoading={growthInputLoading}
-                onCancel={() => setShowGrowthInput(false)}
+                onCancel={handleCancelGrowthInput}
+                initialData={editingRecord}
               />
             )}
 
-            {/* Current Stats */}
             {growthRecords.length > 0 && (
               <>
                 <div className="current-stats-card">
@@ -375,8 +405,17 @@ export default function Growth() {
                     <div className="current-stat-emoji">⬆️</div>
                     <div className="current-stat-content">
                       <h3>Current Weight</h3>
-                      <p className="current-stat-value">{growthRecords[0].weight_kg} kg</p>
-                      <p>{new Date(growthRecords[0].date).toLocaleDateString()}</p>
+                      <p className="current-stat-value">{latestRecord.weight_kg} kg</p>
+                      <p>{new Date(latestRecord.date).toLocaleDateString()}</p>
+                      {latestWho?._skip ? (
+                        <p className="who-hint">⚙️ Set baby gender for WHO percentiles</p>
+                      ) : latestWho?.weight_kg && (
+                        <p>
+                          <span className="who-badge" style={{ backgroundColor: latestWho.weight_kg.color }}>
+                            {latestWho.weight_kg.category} (p{latestWho.weight_kg.percentile})
+                          </span>
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -384,13 +423,36 @@ export default function Growth() {
                     <div className="current-stat-emoji">📏</div>
                     <div className="current-stat-content">
                       <h3>Current Height</h3>
-                      <p className="current-stat-value">{growthRecords[0].height_cm} cm</p>
+                      <p className="current-stat-value">{latestRecord.height_cm} cm</p>
                       <p>Age: {_calculateAge(selectedBaby.date_of_birth)}</p>
+                      {latestWho?._skip ? (
+                        <p className="who-hint">⚙️ Set baby gender for WHO percentiles</p>
+                      ) : latestWho?.height_cm && (
+                        <p>
+                          <span className="who-badge" style={{ backgroundColor: latestWho.height_cm.color }}>
+                            {latestWho.height_cm.category} (p{latestWho.height_cm.percentile})
+                          </span>
+                        </p>
+                      )}
                     </div>
                   </div>
+
+                  {trendAnalysis && trendAnalysis.length > 0 && (
+                    <div className="trend-section">
+                      {trendAnalysis.map((trend, i) => (
+                        <div key={i} className={`trend-indicator trend-${trend.direction}`}>
+                          {trend.text}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {growthRecords.length === 1 && (
+                    <div className="trend-empty">
+                      More measurements are needed for trend analysis.
+                    </div>
+                  )}
                 </div>
 
-                {/* Growth Chart */}
                 <div className="growth-chart-card">
                   <div className="growth-chart-header">
                     <h3>{metric.icon} {metric.label} Progress</h3>
@@ -407,18 +469,13 @@ export default function Growth() {
                       >
                         Height
                       </button>
-                      <button
-                        className={`metric-btn ${chartMetric === 'head' ? 'active' : ''}`}
-                        onClick={() => setChartMetric('head')}
-                      >
-                        Head
-                      </button>
+
                     </div>
                   </div>
                   {chartValues.length > 0 ? (
                     <div className="growth-line-chart">
                       <svg viewBox="0 0 300 140" className="growth-line-svg" role="img" aria-label={`${metric.label} trend`}>
-                        <path className="growth-line" d={buildLinePath()} />
+                        <path className="growth-line" d={buildLinePath(chartValues)} />
                         {chartValues.map((point, index) => {
                           const width = 300;
                           const height = 140;
@@ -452,7 +509,6 @@ export default function Growth() {
                   )}
                 </div>
 
-                {/* Growth Records Table */}
                 <div className="growth-records-card">
                   <h3>📋 All Measurements</h3>
                   {growthRecords.length > 0 ? (
@@ -461,29 +517,52 @@ export default function Growth() {
                         <div className="table-cell">Date</div>
                         <div className="table-cell">Weight (kg)</div>
                         <div className="table-cell">Height (cm)</div>
-                        <div className="table-cell">Head Circumference (cm)</div>
-                        <div className="table-cell">Action</div>
+                        <div className="table-cell">Actions</div>
                       </div>
-                      {growthRecords.map(record => (
-                        <div key={record.id} className="table-row">
-                          <div className="table-cell">
-                            {new Date(record.date).toLocaleDateString()}
+                      {growthRecords.map(record => {
+                        const who = record.who_analysis;
+                        return (
+                          <div key={record.id} className="table-row">
+                            <div className="table-cell">
+                              {new Date(record.date).toLocaleDateString()}
+                            </div>
+                            <div className="table-cell">
+                              {record.weight_kg}
+                              {who?._skip ? (
+                                <div style={{ fontSize: '10px', color: '#9ba4b5' }}>Set gender</div>
+                              ) : who?.weight_kg && (
+                                <div><span className="who-badge" style={{ backgroundColor: who.weight_kg.color, fontSize: '10px' }}>{who.weight_kg.category}</span></div>
+                              )}
+                            </div>
+                            <div className="table-cell">
+                              {record.height_cm}
+                              {who?._skip ? (
+                                <div style={{ fontSize: '10px', color: '#9ba4b5' }}>Set gender</div>
+                              ) : who?.height_cm && (
+                                <div><span className="who-badge" style={{ backgroundColor: who.height_cm.color, fontSize: '10px' }}>{who.height_cm.category}</span></div>
+                              )}
+                            </div>
+                            <div className="table-cell">
+                              <div className="action-buttons">
+                                <button
+                                  className="edit-btn"
+                                  onClick={() => handleEditGrowthRecord(record)}
+                                  title="Edit"
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  className="delete-btn"
+                                  onClick={() => handleDeleteGrowthRecord(record.id)}
+                                  title="Delete"
+                                >
+                                  🗑
+                                </button>
+                              </div>
+                            </div>
                           </div>
-                          <div className="table-cell">{record.weight_kg}</div>
-                          <div className="table-cell">{record.height_cm}</div>
-                          <div className="table-cell">
-                            {record.head_circumference_cm || '-'}
-                          </div>
-                          <div className="table-cell">
-                            <button 
-                              className="delete-btn"
-                              onClick={() => handleDeleteGrowthRecord(record.id)}
-                            >
-                              🗑
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <p style={{ textAlign: 'center', color: '#666', padding: '20px' }}>
@@ -491,6 +570,7 @@ export default function Growth() {
                     </p>
                   )}
                 </div>
+                <div ref={recordsEndRef} />
               </>
             )}
 
@@ -503,30 +583,91 @@ export default function Growth() {
           </div>
         )}
 
-        {/* Milestones Tab */}
         {activeTab === 'milestones' && selectedBaby && (
           <div className="milestones-section">
             <h2>🎯 Developmental Milestones: {selectedBaby.name}</h2>
             <p className="milestones-subtitle">Age: {_calculateAge(selectedBaby.date_of_birth)} months</p>
-            <div className="milestones-list">
-              {milestones.map((milestone) => (
-                <MilestoneCard
-                  key={milestone.id}
-                  id={milestone.id}
-                  name={milestone.name}
-                  emoji={milestone.emoji}
-                  ageInMonths={milestone.ageInMonths}
-                  completed={milestone.completed}
-                  onClick={() => toggleMilestone(milestone.id)}
-                />
-              ))}
-            </div>
+            {milestonesLoading ? (
+              <div className="growth-skeleton">
+                <div className="growth-skeleton-line wide" />
+                <div className="growth-skeleton-line" />
+                <div className="growth-skeleton-line medium" />
+              </div>
+            ) : (
+              <div className="milestones-list">
+                {milestones.map((milestone) => {
+                  const defaultM = DEFAULT_MILESTONES.find(dm => dm.key === milestone.milestone_key);
+                  return (
+                    <MilestoneCard
+                      key={milestone.id}
+                      name={milestone.milestone_name}
+                      emoji={defaultM?.emoji || '🎯'}
+                      ageInMonths={milestone.expected_age_months}
+                      completed={milestone.completed}
+                      completedDate={milestone.completed_date}
+                      notes={milestone.notes}
+                      onClick={() => toggleMilestone(milestone.id, milestone.completed)}
+                      onEditNotes={(notes) => handleEditMilestoneNotes(milestone.id, notes)}
+                      onEditDate={(date) => handleEditMilestoneDate(milestone.id, date)}
+                    />
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* Bottom Navigation */}
       <BottomNavigation activeTab="Growth" />
+
+      <button className="growth-info-btn" onClick={() => setShowInfoModal(true)} title="Growth Standards Info">i</button>
+
+      {showInfoModal && (
+        <div className="growth-info-overlay" onClick={() => setShowInfoModal(false)}>
+          <div className="growth-info-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>📊 Growth Tracking Standards</h2>
+
+            <h3>WHO Child Growth Standards</h3>
+            <p>
+              NutriTrack uses the <strong>WHO Child Growth Standards</strong> (Multicentre Growth Reference Study)
+              to evaluate your baby's growth. These standards are based on healthy breastfed infants from
+              diverse ethnic backgrounds across six countries.
+            </p>
+
+            <h3>What the Percentiles Mean</h3>
+            <p>
+              A percentile value tells you where your baby ranks compared to other healthy babies of the same
+              age and gender. For example, a weight at the 60th percentile means your baby weighs more than
+              60% of peers.
+            </p>
+
+            <h3>Growth Categories</h3>
+            <ul>
+              <li><strong style={{ color: '#22c55e' }}>Normal</strong> (p3–p50) — Healthy growth range</li>
+              <li><strong style={{ color: '#eab308' }}>Above Average</strong> (p50–p98) — Above typical range</li>
+                <li><strong style={{ color: '#f97316' }}>Underweight / Stunted</strong> (p{'\u003C'}3) — Below typical range</li>
+              <li><strong style={{ color: '#ef4444' }}>Severe</strong> — Requires medical attention</li>
+            </ul>
+
+            <h3>How to Use This Tracker</h3>
+            <p>
+              Record your baby's weight and height weekly. The chart shows progress over time, while
+              WHO badges indicate growth category. Trend arrows show change since the last measurement.
+              More data points give a clearer growth picture.
+            </p>
+
+            <h3>Developmental Milestones</h3>
+            <p>
+              Milestones are age-typical skills (e.g., first smile, rolling over). Track when your baby
+              achieves each one. These are automatically created when you add a baby.
+            </p>
+
+            <button className="growth-info-close" onClick={() => setShowInfoModal(false)}>
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

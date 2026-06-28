@@ -36,10 +36,6 @@ const Baby = sequelize.define('Baby', {
     type: DataTypes.FLOAT,
     allowNull: true,
   },
-  head_circumference_at_birth_cm: {
-    type: DataTypes.FLOAT,
-    allowNull: true,
-  },
   blood_type: {
     type: DataTypes.STRING(10),
     allowNull: true,

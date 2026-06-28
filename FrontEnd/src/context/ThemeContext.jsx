@@ -8,15 +8,16 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     // Check localStorage for saved preference
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      setDarkMode(savedTheme === 'dark');
-    }
+    const isDark = savedTheme === 'dark' || !savedTheme; // default to dark in this app
+    setDarkMode(isDark);
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
   }, []);
 
   const toggleDarkMode = () => {
     setDarkMode(prev => {
       const newMode = !prev;
       localStorage.setItem('theme', newMode ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', newMode ? 'dark' : 'light');
       return newMode;
     });
   };
