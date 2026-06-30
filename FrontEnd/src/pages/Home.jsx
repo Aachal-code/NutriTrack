@@ -154,6 +154,31 @@ export default function Home() {
           babyDob={userData.babyDob}
         />
 
+        {/* Important Baby Documents */}
+        <div className="doc-section">
+          <div className="doc-section-header">
+            <h2>Important Baby Documents</h2>
+          </div>
+          <div className="doc-grid">
+            <div className="doc-card" onClick={() => navigate('/documents/discharge-summary')}>
+              <span className="doc-icon">🏥</span>
+              <span className="doc-card-title">Hospital<br/>Discharge Summary</span>
+            </div>
+            <div className="doc-card" onClick={() => navigate('/documents/immunization-card')}>
+              <span className="doc-icon">💉</span>
+              <span className="doc-card-title">Immunization<br/>Card (खोप कार्ड)</span>
+            </div>
+            <div className="doc-card" onClick={() => navigate('/documents/birth-registration')}>
+              <span className="doc-icon">📜</span>
+              <span className="doc-card-title">Birth<br/>Registration<br/>(जन्म दर्ता)</span>
+            </div>
+            <div className="doc-card" onClick={() => navigate('/documents/medical-records')}>
+              <span className="doc-icon">📁</span>
+              <span className="doc-card-title">Medical<br/>Records</span>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       {/* Notification Modal */}

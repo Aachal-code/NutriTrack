@@ -428,6 +428,43 @@ export function setAuthToken(token) {
   window.dispatchEvent(new Event('login'));
 }
 
+// ===== Baby Documents =====
+export async function uploadDocument(babyId, formData) {
+  return request('/api/documents/upload', {
+    method: 'POST',
+    body: formData,
+  });
+}
+
+export async function getDocuments(babyId, category) {
+  return request(`/api/documents/${babyId}/${category}`);
+}
+
+export async function deleteDocument(docId) {
+  return request(`/api/documents/${docId}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function getDocumentFileUrl(docId) {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  return `${API_URL}/api/documents/file/${docId}`;
+}
+
+export async function getDocumentFileBlob(docId) {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const token = getAuthToken();
+  const res = await fetch(`${API_URL}/api/documents/file/${docId}`, {
+    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error('Failed to fetch document file');
+  return res.blob();
+}
+
+export async function getDocumentCounts(babyId) {
+  return request(`/api/documents/counts/${babyId}`);
+}
+
 export function getAuthToken() {
   return localStorage.getItem('auth_token');
 }

@@ -653,6 +653,64 @@
     margin: 0 auto;
   }
 }
+/* ===== IMPORTANT BABY DOCUMENTS ===== */
+.doc-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.doc-section-header h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-main, #e2e8f0);
+  margin: 0;
+}
+
+.doc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.doc-card {
+  background: var(--card-dark, #1e1f2b);
+  border: 1px solid var(--border, #2b2c37);
+  border-radius: 14px;
+  padding: 16px 10px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.doc-card:hover {
+  border-color: var(--accent, #7be0d6);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.doc-icon {
+  font-size: 44px;
+  line-height: 1;
+}
+
+.doc-card-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-main, #e2e8f0);
+  line-height: 1.3;
+}
+
+@media (max-width: 400px) {
+  .doc-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ===== FLOATING ADD BUTTON ===== */
 .floating-add-button {
   position: fixed;
