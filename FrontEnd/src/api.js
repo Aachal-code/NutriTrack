@@ -419,6 +419,18 @@ export async function getNutrientGroups() {
   return request('/api/foods/nutrient-groups');
 }
 
+// ===== Profile Statistics =====
+export async function getProfileStatistics() {
+  return request('/api/profile/statistics');
+}
+
+export async function uploadProfileImage(formData) {
+  return request('/api/profile/image', {
+    method: 'POST',
+    body: formData,
+  });
+}
+
 // ===== Auth Token Management =====
 export function setAuthToken(token) {
   if (!token) return;
