@@ -33,6 +33,7 @@ import AddBaby from './pages/AddBaby'
 import Nutrition from './pages/Nutrition'
 import Vaccines from './pages/Vaccines'
 import Feeding from './pages/Feeding'
+import FeedingHistory from './pages/FeedingHistory'
 import Growth from './pages/Growth'
 import DischargeSummary from './pages/documents/DischargeSummary'
 import ImmunizationCard from './pages/documents/ImmunizationCard'
@@ -84,6 +85,7 @@ function App() {
               <Route path="/vaccines" element={<Vaccines />} />
               <Route path="/pregnant/vaccines" element={<PregnantVaccines />} />
               <Route path="/feeding" element={<Feeding />} />
+              <Route path="/feeding/history" element={<FeedingHistory />} />
               <Route path="/growth" element={<Growth />} />
               <Route path="/documents/discharge-summary" element={<DischargeSummary />} />
               <Route path="/documents/immunization-card" element={<ImmunizationCard />} />

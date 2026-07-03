@@ -10,3 +10,4 @@ export { default as Feeding } from './Feeding.js';
 export { default as Food } from './Food.js';
 export { default as DevelopmentMilestone } from './DevelopmentMilestone.js';
 export { default as BabyDocument } from './BabyDocument.js';
+export { default as FeedingLog } from './FeedingLog.js';

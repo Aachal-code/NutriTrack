@@ -431,6 +431,55 @@ export async function uploadProfileImage(formData) {
   });
 }
 
+// ===== Feeding Logs =====
+export async function getFeedingLogs(params = {}) {
+  const query = new URLSearchParams();
+  if (params.baby_id) query.set('baby_id', params.baby_id);
+  if (params.start_date) query.set('start_date', params.start_date);
+  if (params.end_date) query.set('end_date', params.end_date);
+  if (params.type) query.set('type', params.type);
+  if (params.search) query.set('search', params.search);
+  if (params.limit) query.set('limit', params.limit);
+  if (params.offset) query.set('offset', params.offset);
+  const qs = query.toString();
+  return request(`/api/feeding-logs/logs${qs ? '?' + qs : ''}`);
+}
+
+export async function getFeedingLog(logId) {
+  return request(`/api/feeding-logs/logs/${logId}`);
+}
+
+export async function createFeedingLog(logData) {
+  return request('/api/feeding-logs/logs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(logData),
+  });
+}
+
+export async function updateFeedingLog(logId, logData) {
+  return request(`/api/feeding-logs/logs/${logId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(logData),
+  });
+}
+
+export async function deleteFeedingLog(logId) {
+  return request(`/api/feeding-logs/logs/${logId}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function getFeedingLogsSummary(params = {}) {
+  const query = new URLSearchParams();
+  if (params.baby_id) query.set('baby_id', params.baby_id);
+  if (params.start_date) query.set('start_date', params.start_date);
+  if (params.end_date) query.set('end_date', params.end_date);
+  const qs = query.toString();
+  return request(`/api/feeding-logs/logs/summary${qs ? '?' + qs : ''}`);
+}
+
 // ===== Auth Token Management =====
 export function setAuthToken(token) {
   if (!token) return;
