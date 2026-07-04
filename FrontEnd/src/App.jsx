@@ -52,6 +52,7 @@ import PregnantResources from './pages/PregnantResources'
 import PregnantEmergency from './pages/PregnantEmergency'
 import ProtectedRoute from './components/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
+import SimpleChatbot from './components/SimpleChatbot'
 import './App.css'
 
 /**
@@ -108,6 +109,7 @@ function App() {
             <Route path="/" element={<Navigate to="/onboarding" replace />} />
             <Route path="*" element={<Navigate to="/onboarding" replace />} />
           </Routes>
+          <SimpleChatbot />
         </Router>
       </BabyProvider>
     </ErrorBoundary>
