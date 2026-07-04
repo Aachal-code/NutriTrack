@@ -110,12 +110,27 @@ Reference content and profile
 Feeding, food, milestones, and documents
 - `GET /api/feedings` list feeding guidance, optionally filtered by age.
 - `GET /api/feedings/:feedingId` fetch one feeding entry.
-- `GET /api/foods` list recommended and avoided foods.
-- `GET /api/milestones` list developmental milestones.
-- `GET /api/documents` list baby documents.
-- `POST /api/documents` upload a baby document.
-- `GET /api/feeding-logs` list feeding logs.
-- `POST /api/feeding-logs` create a feeding log entry.
+- `GET /api/foods/all` list all foods.
+- `GET /api/foods/pregnancy` list pregnancy foods.
+- `GET /api/foods/type/:type` filter foods by type.
+- `GET /api/foods/category/:category` filter foods by category.
+- `GET /api/foods/nutrient-group/:group` filter foods by nutrient group.
+- `GET /api/foods/trimester/:trimester` filter foods by trimester.
+- `GET /api/foods/diet-type/:dietType` filter foods by diet type.
+- `GET /api/foods/search` search foods.
+- `GET /api/foods/nutrient-groups` list nutrient groups.
+- `GET /api/milestones/:babyId` list developmental milestones for a baby.
+- `POST /api/milestones` create a developmental milestone.
+- `PUT /api/milestones/:id` update a developmental milestone.
+- `DELETE /api/milestones/:id` delete a developmental milestone.
+- `POST /api/documents/upload` upload one or more baby documents.
+- `GET /api/documents/:babyId/:category` list documents for a baby and category.
+- `GET /api/documents/counts/:babyId` get document counts for a baby.
+- `GET /api/documents/file/:id` fetch a stored document file.
+- `DELETE /api/documents/:id` remove a document.
+- `GET /api/feeding-logs/logs` list feeding logs.
+- `POST /api/feeding-logs/logs` create a feeding log entry.
+- `GET /api/feeding-logs/logs/summary` get feeding summary data.
 
 ## Core Data Model
 - `User` stores account identity, auth fields, and user type.
