@@ -22,6 +22,20 @@
   padding: 30px 20px 20px;
 }
 
+.guide-back-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--guide-text);
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
 .pregnancy-guide-eyebrow {
   display: inline-block;
   margin-bottom: 10px;

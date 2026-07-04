@@ -1043,5 +1043,44 @@
   opacity: 0.85;
 }
 
+/* ===== QUICK NAV CARDS ===== */
+.quick-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.quick-nav-card {
+  flex: 1;
+  background: var(--card-dark);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.quick-nav-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.quick-nav-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.quick-nav-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
 
 

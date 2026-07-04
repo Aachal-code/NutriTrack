@@ -45,6 +45,11 @@ import PregnantHome from './pages/PregnantHome'
 import PregnantNutrition from './pages/PregnantNutrition'
 import PregnantHealthGuide from './pages/PregnantHealthGuide'
 import PregnantVaccines from './pages/PregnantVaccines'
+import PregnantVaccineList from './pages/PregnantVaccineList'
+import PregnantDailyCare from './pages/PregnantDailyCare'
+import PregnantHealth from './pages/PregnantHealth'
+import PregnantResources from './pages/PregnantResources'
+import PregnantEmergency from './pages/PregnantEmergency'
 import ProtectedRoute from './components/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
 import './App.css'
@@ -84,6 +89,11 @@ function App() {
               <Route path="/pregnant/health-guide" element={<PregnantHealthGuide />} />
               <Route path="/vaccines" element={<Vaccines />} />
               <Route path="/pregnant/vaccines" element={<PregnantVaccines />} />
+              <Route path="/pregnant/vaccines/list" element={<PregnantVaccineList />} />
+              <Route path="/pregnant/vaccines/daily" element={<PregnantDailyCare />} />
+              <Route path="/pregnant/vaccines/health" element={<PregnantHealth />} />
+              <Route path="/pregnant/vaccines/resources" element={<PregnantResources />} />
+              <Route path="/pregnant/emergency" element={<PregnantEmergency />} />
               <Route path="/feeding" element={<Feeding />} />
               <Route path="/feeding/history" element={<FeedingHistory />} />
               <Route path="/growth" element={<Growth />} />

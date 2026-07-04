@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import BottomNavigation from '../components/BottomNavigation'
 import PregnancyInfoSection from '../components/PregnancyInfoSection'
 import '../styles/PregnancyGuide.css'
@@ -93,9 +95,14 @@ const hospitalSymptoms = [
 ]
 
 export default function PregnantHealthGuide() {
+  const navigate = useNavigate()
+
   return (
     <div className="pregnancy-guide-container">
       <header className="pregnancy-guide-header">
+        <button className="guide-back-btn" onClick={() => navigate('/pregnant/home')}>
+          <ArrowLeft size={20} />
+        </button>
         <span className="pregnancy-guide-eyebrow">Pregnancy health guide</span>
         <h1>Symptoms to watch during pregnancy</h1>
         <p>

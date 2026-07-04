@@ -356,6 +356,10 @@ export async function deleteVaccineReminder(reminderId) {
   });
 }
 
+export async function getMotherVaccines() {
+  return request('/api/vaccines/mother');
+}
+
 // ===== Food Items =====
 export async function getAllFoods() {
   return request('/api/foods/all');
